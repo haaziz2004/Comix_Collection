@@ -1,6 +1,6 @@
-package Comic ;
+package Comic;
 
-public class ComicBook implements IComic{
+public class ComicBook implements IComic {
     private String publisher;
     private String seriesTitle;
     private int volumeNumber;
@@ -19,7 +19,7 @@ public class ComicBook implements IComic{
     }
 
     public ComicBook(String publisher, String seriesTitle, int volumeNumber, int issueNumber, String publicationDate,
-                     String creators, String principleCharacters, String description) {
+            String creators, String principleCharacters, String description) {
         this(publisher, seriesTitle, volumeNumber, issueNumber, publicationDate);
         this.creators = creators;
         this.principleCharacters = principleCharacters;
@@ -31,31 +31,31 @@ public class ComicBook implements IComic{
         return publisher;
     }
 
-    public String seriesTitleGet() {
+    public String getSeriesTitle() {
         return seriesTitle;
     }
 
-    public int volumeNumberGet() {
+    public int getVolumeNumber() {
         return volumeNumber;
     }
 
-    public int issueNumberGet() {
+    public int getIssueNumber() {
         return issueNumber;
     }
 
-    public String publicationDateGet() {
+    public String getPublicationDate() {
         return publicationDate;
     }
 
-    public String creatorsGet() {
+    public String getCreators() {
         return creators;
     }
 
-    public String principleCharactersGet() {
+    public String getPrincipleCharacters() {
         return principleCharacters;
     }
 
-    public String descriptionGet() {
+    public String getDescription() {
         return description;
     }
 
@@ -63,37 +63,36 @@ public class ComicBook implements IComic{
         return 0;
     }
 
-
     // Setters
-    public void publisherSet(String publisher) {
+    public void setPublisher(String publisher) {
         this.publisher = publisher;
     }
 
-    public void seriesTitleSet(String seriesTitle) {
+    public void setSeriesTitle(String seriesTitle) {
         this.seriesTitle = seriesTitle;
     }
 
-    public void volumeNumberSet(int volumeNumber) {
+    public void setVolumeNumber(int volumeNumber) {
         this.volumeNumber = volumeNumber;
     }
 
-    public void issueNumberSet(int issueNumber) {
+    public void setIssueNumber(int issueNumber) {
         this.issueNumber = issueNumber;
     }
 
-    public void publicationDateSet(String publicationDate) {
+    public void setPublicationDate(String publicationDate) {
         this.publicationDate = publicationDate;
     }
 
-    public void creatorsSet(String creators) {
+    public void setCreators(String creators) {
         this.creators = creators;
     }
 
-    public void principleCharactersSet(String principleCharacters) {
+    public void setPrincipleCharacters(String principleCharacters) {
         this.principleCharacters = principleCharacters;
     }
 
-    public void descriptionSet(String description) {
+    public void setDescription(String description) {
         this.description = description;
     }
 }
