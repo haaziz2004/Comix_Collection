@@ -1,6 +1,6 @@
-package Comic ;
+package com.comix.comixbackend.comic;
 
-public abstract class BaseComicDecorator implements IComic{
+public abstract class BaseComicDecorator implements IComic {
     private final IComic wrapped;
     private double value;
 
@@ -10,7 +10,7 @@ public abstract class BaseComicDecorator implements IComic{
     }
 
     BaseComicDecorator(IComic wrapped) {
-        this(wrapped, 5) ;
+        this(wrapped, 5);
     }
 
     @Override

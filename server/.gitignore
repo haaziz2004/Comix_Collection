@@ -26,3 +26,6 @@ target/**
 
 # Ignore tool files
 .vscode
+
+# Environment variables
+.env

@@ -1,4 +1,4 @@
-package Comic;
+package com.comix.comixbackend.comic;
 
 public class ComicBook implements IComic {
     private String publisher;

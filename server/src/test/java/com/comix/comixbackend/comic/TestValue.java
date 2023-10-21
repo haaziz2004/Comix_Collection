@@ -1,10 +1,8 @@
-package comic;
+package com.comix.comixbackend.comic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-
-import Comic.*;
 
 public class TestValue {
     @Test
@@ -23,22 +21,17 @@ public class TestValue {
 
     @Test
     public void testGradedValue() {
-        IComic graded = new ComicGradedDecorator(new ComicValueDecorator(new ComicBook("Publisher",
-                        "HI",
-                        1,
-                        1,
-                        "Octoberish")));
+        IComic graded = new ComicGradedDecorator(
+                new ComicValueDecorator(new ComicBook("Publisher", "HI", 1, 1, "Octoberish")));
         System.out.println("Checked if class is created with a value 3 times the count");
         assertEquals(15, graded.getValue());
     }
 
     @Test
     public void testSlabbedValue() {
-        IComic slabbed = new ComicSlabbedDecorator(new ComicGradedDecorator(new ComicValueDecorator(new ComicBook("Publisher",
-                        "HI",
-                        1,
-                        1,
-                        "Octoberish"))));
+        IComic slabbed = new ComicSlabbedDecorator(
+                new ComicGradedDecorator(
+                        new ComicValueDecorator(new ComicBook("Publisher", "HI", 1, 1, "Octoberish"))));
         System.out.println("Checked if class is created with a value double that of graded");
         assertEquals(30, slabbed.getValue());
     }
