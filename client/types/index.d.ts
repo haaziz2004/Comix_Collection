@@ -1,5 +1,5 @@
-import { Icons } from "@/components/icons";
-import { NavLink } from "react-router-dom";
+import { type Icons } from "@/components/icons";
+import { type NavLink } from "react-router-dom";
 
 export type NavItem = {
   title: string;
