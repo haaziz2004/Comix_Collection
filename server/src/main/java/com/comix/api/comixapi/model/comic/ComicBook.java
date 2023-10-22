@@ -1,6 +1,9 @@
-package com.comix.comixapi.model.comic;
+package com.comix.api.comixapi.model.comic;
 
 import java.util.Set;
+
+import com.comix.api.comixapi.model.character.Character;
+import com.comix.api.comixapi.model.creator.Creator;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -93,7 +96,7 @@ public class ComicBook implements IComic {
     }
 
     public double getValue() {
-        return 0;
+        return 1;
     }
 
     // Setters

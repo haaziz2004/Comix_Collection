@@ -1,4 +1,4 @@
-package com.comix.comixapi.model.comic;
+package com.comix.api.comixapi.model.character;
 
 import java.util.Set;
 
@@ -9,22 +9,23 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 
-@Entity(name = "creators")
-public class Creator {
+import com.comix.api.comixapi.model.comic.ComicBook;
+
+@Entity(name = "characters")
+public class Character {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
     @Column(unique = true)
     private String name;
 
-    @ManyToMany(mappedBy = "creators")
+    @ManyToMany(mappedBy = "principleCharacters")
     private Set<ComicBook> comics;
 
-    protected Creator() {
+    protected Character() {
     }
 
-    public Creator(String name) {
+    public Character(String name) {
         this.name = name;
     }
 

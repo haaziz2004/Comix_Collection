@@ -1,14 +1,12 @@
-package com.comix.comixapi.model.comic;
+package com.comix.api.comixapi.model.comic;
 
 public class ComicSlabbedDecorator extends BaseComicDecorator {
-    private final IComic wrapped;
 
     public ComicSlabbedDecorator(IComic wrapped) {
         super(wrapped);
-        this.wrapped = wrapped;
     }
 
     public double getValue() {
-        return wrapped.getValue() * 2;
+        return super.getValue() * 2;
     }
 }

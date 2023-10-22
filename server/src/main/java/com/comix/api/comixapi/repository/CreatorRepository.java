@@ -1,9 +1,9 @@
-package com.comix.comixapi.repository;
+package com.comix.api.comixapi.repository;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import com.comix.comixapi.model.comic.Creator;
+import com.comix.api.comixapi.model.creator.Creator;
 
 @Repository
 public interface CreatorRepository extends CrudRepository<Creator, Long> {

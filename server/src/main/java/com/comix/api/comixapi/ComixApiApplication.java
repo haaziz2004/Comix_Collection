@@ -1,4 +1,4 @@
-package com.comix.comixapi;
+package com.comix.api.comixapi;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
