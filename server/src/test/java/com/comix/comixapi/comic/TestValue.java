@@ -1,8 +1,14 @@
-package com.comix.comixbackend.comic;
+package com.comix.comixapi.comic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
+
+import com.comix.comixapi.model.comic.ComicBook;
+import com.comix.comixapi.model.comic.ComicGradedDecorator;
+import com.comix.comixapi.model.comic.ComicSlabbedDecorator;
+import com.comix.comixapi.model.comic.ComicValueDecorator;
+import com.comix.comixapi.model.comic.IComic;
 
 public class TestValue {
     @Test

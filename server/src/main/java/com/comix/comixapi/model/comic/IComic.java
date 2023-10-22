@@ -1,4 +1,4 @@
-package com.comix.comixbackend.comic;
+package com.comix.comixapi.model.comic;
 
 public interface IComic {
     public double getValue();
