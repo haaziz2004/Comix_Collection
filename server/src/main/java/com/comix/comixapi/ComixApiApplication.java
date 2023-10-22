@@ -1,13 +1,13 @@
-package com.comix.comixbackend;
+package com.comix.comixapi;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ComixBackendApplication {
+public class ComixApiApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ComixBackendApplication.class, args);
+		SpringApplication.run(ComixApiApplication.class, args);
 	}
 
 }
