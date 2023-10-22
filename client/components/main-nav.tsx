@@ -29,7 +29,7 @@ export function MainNav({ items, children, user }: MainNavProps) {
   const [showMobileMenu, setShowMobileMenu] = useState<boolean>(false);
 
   return (
-    <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
+    <div className="container flex h-20 items-center space-x-4 sm:justify-between sm:space-x-0">
       <div className="flex gap-6 md:gap-10">
         <Link href="/" className="hidden items-center space-x-2 md:flex">
           <Icons.logo />
@@ -44,7 +44,7 @@ export function MainNav({ items, children, user }: MainNavProps) {
                 key={index}
                 href={item.disabled ? "#" : item.href}
                 className={cn(
-                  "flex items-center text-lg font-medium transition-colors hover:text-foreground/80 sm:text-sm",
+                  "flex items-center text-xl font-medium transition-colors hover:text-foreground/80 sm:text-sm",
                   item.href.startsWith(`/${segment}`)
                     ? "text-foreground"
                     : "text-foreground/60",

@@ -1,5 +1,5 @@
 import { MainNav } from "@/components/main-nav";
-import { AccountNav } from "@/components/nav";
+import { AccountNav } from "@/components/account-sidebar-nav";
 import { accountConfig } from "@/config/account";
 import { getCurrentUser } from "@/lib/session";
 

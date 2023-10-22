@@ -64,4 +64,81 @@ export const comicRouter = createTRPCRouter({
 
       return comic;
     }),
+  addToPersonalCollection: protectedProcedure
+    .input(
+      z.object({
+        id: z.number().int().positive(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = ctx.session.user;
+
+      // find comic
+      const comic = await ctx.db.comic.findUnique({
+        where: { id: input.id },
+      });
+
+      if (!comic) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Comic not found",
+        });
+      }
+
+      // check if it's already in the user's collection
+      const personalCollection = await ctx.db.personalCollection.findUnique({
+        where: { userId: user.id },
+        include: {
+          userComics: {
+            where: { comicId: input.id },
+          },
+        },
+      });
+
+      if (personalCollection?.userComics.length !== 0) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "Comic already exists in personal collection",
+        });
+      }
+
+      // make it a userComic
+      const userComic = await ctx.db.userComic.upsert({
+        where: {
+          userId_comicId: {
+            userId: user.id,
+            comicId: input.id,
+          },
+        },
+        create: {
+          userId: user.id,
+          comicId: input.id,
+        },
+        update: {},
+      });
+
+      // add it to the user's personal collection and create a user's personal collection if it doesn't exist
+      const updatedPersonalCollection = await ctx.db.personalCollection.upsert({
+        where: {
+          userId: user.id,
+        },
+        create: {
+          userId: user.id,
+          userComics: {
+            connect: {
+              id: userComic.id,
+            },
+          },
+        },
+        update: {
+          userComics: {
+            connect: {
+              id: userComic.id,
+            },
+          },
+        },
+      });
+
+      return updatedPersonalCollection;
+    }),
 });

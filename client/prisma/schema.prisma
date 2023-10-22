@@ -53,6 +53,7 @@ model User {
   sessions           Session[]
   role               UserRole            @default(USER)
   personalCollection PersonalCollection?
+  UserComic          UserComic[]
 
   @@map("users")
 }
@@ -72,18 +73,18 @@ model VerificationToken {
 }
 
 model Comic {
-  id                  Int                  @id @default(autoincrement())
+  id                  Int         @id @default(autoincrement())
   publisher           String
   seriesTitle         String
-  volumeNumber        String               @db.VarChar(40)
-  issueNumber         String               @db.VarChar(10)
-  publicationDate     String               @db.VarChar(20)
-  storyTitle          String?              @db.VarChar(255)
+  volumeNumber        String      @db.VarChar(40)
+  issueNumber         String      @db.VarChar(10)
+  publicationDate     String      @db.VarChar(20)
+  storyTitle          String?     @db.VarChar(255)
   creators            Creator[]
   principleCharacters Character[]
-  personalCollections PersonalCollection[]
   description         String?
   value               Float?
+  UserComic           UserComic[]
 
   @@unique([publisher, seriesTitle, volumeNumber, issueNumber, publicationDate])
   @@map("comics")
@@ -99,17 +100,34 @@ model Creator {
 
 model Character {
   id     Int     @id @default(autoincrement())
-  name   String
+  name   String  @unique
   comics Comic[]
 
   @@map("characters")
 }
 
 model PersonalCollection {
-  id     Int     @id @default(autoincrement())
-  userId String  @unique
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  comics Comic[]
+  id         Int         @id @default(autoincrement())
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String      @unique
+  userComics UserComic[]
 
   @@map("personal_collections")
+}
+
+model UserComic {
+  id                   Int                 @id @default(autoincrement())
+  user                 User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId               String
+  comic                Comic               @relation(fields: [comicId], references: [id])
+  comicId              Int
+  PersonalCollection   PersonalCollection? @relation(fields: [personalCollectionId], references: [id])
+  personalCollectionId Int?
+  slapped              Boolean             @default(false)
+  graded               Int                 @default(0)
+
+  @@unique([userId, comicId])
+  @@index([comicId])
+  @@index([personalCollectionId])
+  @@map("user_comics")
 }

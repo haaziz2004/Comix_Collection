@@ -13,10 +13,10 @@ export default async function HomepageLayout({
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="top-0 z-40 w-full bg-background">
+      <header className="top-0 z-40 w-full border-b bg-background">
         <MainNav items={homepageConfig.mainNav} user={user} />
       </header>
-      <main className="flex-1">{children}</main>
+      <main className="container flex-1">{children}</main>
     </div>
   );
 }

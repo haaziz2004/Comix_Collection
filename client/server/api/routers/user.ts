@@ -26,4 +26,42 @@ export const userRouter = createTRPCRouter({
 
       return updatedUser;
     }),
+  getPersonalCollection: protectedProcedure.query(async ({ ctx }) => {
+    const user = ctx.session?.user;
+
+    const personaCollection = await ctx.db.personalCollection.findFirst({
+      where: {
+        userId: user.id,
+      },
+      include: {
+        userComics: {
+          select: {
+            id: true,
+            comic: true,
+            graded: true,
+            slapped: true,
+          },
+          orderBy: [
+            {
+              comic: {
+                seriesTitle: "desc",
+              },
+            },
+            {
+              comic: {
+                volumeNumber: "desc",
+              },
+            },
+            {
+              comic: {
+                issueNumber: "desc",
+              },
+            },
+          ],
+        },
+      },
+    });
+
+    return personaCollection;
+  }),
 });
