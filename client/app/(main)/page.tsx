@@ -9,19 +9,15 @@ import { trpc } from "@/trpc/client";
 import Link from "next/link";
 
 export default function Home() {
-  const { data, isLoading, isError } = trpc.comic.getInfinite.useInfiniteQuery(
-    {
-      limit: 10,
-    },
-    {
-      getNextPageParam: (lastPage) => {
-        return lastPage.nextCursor;
-      },
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-    },
-  );
+  const {
+    data: comics,
+    isLoading,
+    isError,
+  } = trpc.comic.getAll.useQuery(undefined, {
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -30,8 +26,6 @@ export default function Home() {
   if (isError) {
     return <div>Error loading comics</div>;
   }
-
-  const comics = data?.pages.map((page) => page.comics).flat();
 
   return (
     <div className="mt-10 flex h-full w-full items-center justify-center">

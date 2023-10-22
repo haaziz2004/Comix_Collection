@@ -1,9 +1,9 @@
 import { comicRouter } from "./routers/comic";
-import { userRouter } from "./routers/user";
+// import { userRouter } from "./routers/old.user";
 import { createTRPCRouter } from "./trpc";
 
 export const appRouter = createTRPCRouter({
-  user: userRouter,
+  // user: userRouter,
   comic: comicRouter,
 });
 

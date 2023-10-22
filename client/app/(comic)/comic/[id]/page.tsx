@@ -16,42 +16,42 @@ export default function ComicPage({ params }: { params: { id: string } }) {
     },
   );
 
-  const addToCollectionMutation =
-    trpc.comic.addToPersonalCollection.useMutation();
+  // const addToCollectionMutation =
+  //   trpc.comic.addToPersonalCollection.useMutation();
 
-  const utils = trpc.useContext();
+  // const utils = trpc.useContext();
 
-  function handleClick() {
-    addToCollectionMutation.mutate(
-      {
-        id: parseInt(params.id),
-      },
-      {
-        onSuccess: () => {
-          // TODO: doesn't work
-          void utils.user.getPersonalCollection.invalidate();
-          return toast({
-            title: "Comic added to personal collection",
-            variant: "success",
-          });
-        },
-        onError: (error) => {
-          if (error.data?.code === "CONFLICT") {
-            return toast({
-              title: "Comic already in personal collection",
-              description: "You can only add a comic to your collection once",
-              variant: "destructive",
-            });
-          }
-          return toast({
-            title: "Error adding comic to personal collection",
-            description: "Please try again later",
-            variant: "destructive",
-          });
-        },
-      },
-    );
-  }
+  // function handleClick() {
+  //   addToCollectionMutation.mutate(
+  //     {
+  //       id: parseInt(params.id),
+  //     },
+  //     {
+  //       onSuccess: () => {
+  //         // TODO: doesn't work
+  //         void utils.user.getPersonalCollection.invalidate();
+  //         return toast({
+  //           title: "Comic added to personal collection",
+  //           variant: "success",
+  //         });
+  //       },
+  //       onError: (error) => {
+  //         if (error.data?.code === "CONFLICT") {
+  //           return toast({
+  //             title: "Comic already in personal collection",
+  //             description: "You can only add a comic to your collection once",
+  //             variant: "destructive",
+  //           });
+  //         }
+  //         return toast({
+  //           title: "Error adding comic to personal collection",
+  //           description: "Please try again later",
+  //           variant: "destructive",
+  //         });
+  //       },
+  //     },
+  //   );
+  // }
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -97,7 +97,7 @@ export default function ComicPage({ params }: { params: { id: string } }) {
           <h1 className="text-base font-medium">{data?.publisher}</h1>
         </div>
       </div>
-      <Button onClick={handleClick}>Add to Personal Collection</Button>
+      {/* <Button onClick={handleClick}>Add to Personal Collection</Button> */}
     </div>
   );
 }
