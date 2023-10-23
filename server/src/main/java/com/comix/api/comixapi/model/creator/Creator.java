@@ -1,5 +1,6 @@
 package com.comix.api.comixapi.model.creator;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.Column;
@@ -21,13 +22,26 @@ public class Creator {
     private String name;
 
     @ManyToMany(mappedBy = "creators")
-    private Set<ComicBook> comics;
+    private Set<ComicBook> comics = new HashSet<ComicBook>();
 
     protected Creator() {
     }
 
+    public Creator(String name, Set<ComicBook> comics) {
+        this.name = name;
+        this.comics = comics;
+    }
+
     public Creator(String name) {
         this.name = name;
+    }
+
+    public Set<ComicBook> getComics() {
+        return comics;
+    }
+
+    public void setComics(Set<ComicBook> comics) {
+        this.comics = comics;
     }
 
     // Getters

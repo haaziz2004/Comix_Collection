@@ -1,10 +1,12 @@
 package com.comix.api.comixapi.model.comic;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import com.comix.api.comixapi.model.character.Character;
 import com.comix.api.comixapi.model.creator.Creator;
 import com.comix.api.comixapi.model.usercomic.UserComic;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Column;
@@ -22,8 +24,8 @@ import jakarta.persistence.JoinColumn;
 @Entity(name = "comics")
 @Table(uniqueConstraints = {
         @UniqueConstraint(name = "UniquePublisherSeriesTitleVolumeNumberIssueNumberPublicationDate", columnNames = {
-                "publisher", "seriesTitle", "volumeNumber",
-                "issueNumber", "publicationDate" }) })
+                "publisher", "seriesTitle", "volume_number",
+                "issue_number", "publication_date" }) })
 public class ComicBook {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,8 +34,14 @@ public class ComicBook {
 
     private String publisher;
     private String seriesTitle;
-    private int volumeNumber;
-    private int issueNumber;
+
+    @Column(name = "volume_number", length = 40)
+    private String volumeNumber;
+
+    @Column(name = "issue_number", length = 10)
+    private String issueNumber;
+
+    @Column(name = "publication_date", length = 20)
     private String publicationDate;
     private String storyTitle;
 
@@ -49,12 +57,13 @@ public class ComicBook {
     private String description;
 
     @OneToMany(mappedBy = "comic")
-    private Set<UserComic> userComics;
+    private Set<UserComic> userComics = new HashSet<UserComic>();
 
     protected ComicBook() {
     }
 
-    public ComicBook(String publisher, String seriesTitle, int volumeNumber, int issueNumber, String publicationDate) {
+    public ComicBook(String publisher, String seriesTitle, String volumeNumber, String issueNumber,
+            String publicationDate) {
         this.publisher = publisher;
         this.seriesTitle = seriesTitle;
         this.volumeNumber = volumeNumber;
@@ -62,13 +71,23 @@ public class ComicBook {
         this.publicationDate = publicationDate;
     }
 
-    public ComicBook(String publisher, String seriesTitle, int volumeNumber, int issueNumber, String publicationDate,
+    public ComicBook(String publisher, String seriesTitle, String volumeNumber, String issueNumber,
+            String publicationDate,
             Set<Creator> creators, Set<Character> principleCharacters, String description, String storyTitle) {
         this(publisher, seriesTitle, volumeNumber, issueNumber, publicationDate);
         this.creators = creators;
         this.principleCharacters = principleCharacters;
         this.description = description;
         this.storyTitle = storyTitle;
+    }
+
+    public ComicBook(String publisher, String seriesTitle, String volumeNumber, String issueNumber,
+            String publicationDate,
+            Set<Creator> creators, Set<Character> principleCharacters, String description, String storyTitle,
+            Set<UserComic> userComics) {
+        this(publisher, seriesTitle, volumeNumber, issueNumber, publicationDate, creators, principleCharacters,
+                description, storyTitle);
+        this.userComics = userComics;
     }
 
     // Getters
@@ -80,11 +99,11 @@ public class ComicBook {
         return seriesTitle;
     }
 
-    public int getVolumeNumber() {
+    public String getVolumeNumber() {
         return volumeNumber;
     }
 
-    public int getIssueNumber() {
+    public String getIssueNumber() {
         return issueNumber;
     }
 
@@ -117,11 +136,11 @@ public class ComicBook {
         this.seriesTitle = seriesTitle;
     }
 
-    public void setVolumeNumber(int volumeNumber) {
+    public void setVolumeNumber(String volumeNumber) {
         this.volumeNumber = volumeNumber;
     }
 
-    public void setIssueNumber(int issueNumber) {
+    public void setIssueNumber(String issueNumber) {
         this.issueNumber = issueNumber;
     }
 
@@ -145,11 +164,12 @@ public class ComicBook {
         this.storyTitle = storyTitle;
     }
 
-    @Override
-    public String toString() {
-        return String.format(
-                "ComicBook[id=%d, publisher='%s', seriesTitle='%s', volumeNumber='%d', issueNumber='%d', publicationDate='%s', creators='%s', principleCharacters='%s', description='%s']",
-                id, publisher, seriesTitle, volumeNumber, issueNumber, publicationDate, creators, principleCharacters,
-                description);
+    @JsonIgnore
+    public Set<UserComic> getUserComics() {
+        return userComics;
+    }
+
+    public void setUserComics(Set<UserComic> userComics) {
+        this.userComics = userComics;
     }
 }

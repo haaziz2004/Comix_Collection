@@ -8,4 +8,5 @@ import com.comix.api.comixapi.model.character.Character;
 @Repository
 public interface CharacterRepository extends CrudRepository<Character, Long> {
 
+    Character findByName(String name);
 }

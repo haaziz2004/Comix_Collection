@@ -1,5 +1,6 @@
 package com.comix.api.comixapi.model.character;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.Column;
@@ -21,9 +22,14 @@ public class Character {
     private String name;
 
     @ManyToMany(mappedBy = "principleCharacters")
-    private Set<ComicBook> comics;
+    private Set<ComicBook> comics = new HashSet<ComicBook>();
 
     protected Character() {
+    }
+
+    public Character(String name, Set<ComicBook> comics) {
+        this.name = name;
+        this.comics = comics;
     }
 
     public Character(String name) {
@@ -33,6 +39,14 @@ public class Character {
     // Getters
     public String getName() {
         return name;
+    }
+
+    public Set<ComicBook> getComics() {
+        return comics;
+    }
+
+    public void setComics(Set<ComicBook> comics) {
+        this.comics = comics;
     }
 
     // Setters
