@@ -9,21 +9,20 @@ import { buttonVariants } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 import { type MainNavItem } from "@/types";
-import { type User } from "next-auth";
 import { useState } from "react";
 import { UserAccountNav } from "./user-account-nav";
 
 interface MainNavProps {
   items?: MainNavItem[];
   children?: React.ReactNode;
-  user:
-    | (User & {
-        id: string;
-      })
-    | undefined;
+  // user:
+  //   | (User & {
+  //       id: string;
+  //     })
+  //   | undefined;
 }
 
-export function MainNav({ items, children, user }: MainNavProps) {
+export function MainNav({ items, children }: MainNavProps) {
   const segment = useSelectedLayoutSegment();
 
   const [showMobileMenu, setShowMobileMenu] = useState<boolean>(false);
@@ -78,7 +77,7 @@ export function MainNav({ items, children, user }: MainNavProps) {
       <div className="flex flex-1 items-center space-x-4 sm:justify-end">
         <div className="flex-1 sm:grow-0"></div>
         <nav>
-          {user ? (
+          {/* {user ? (
             <UserAccountNav
               user={{
                 name: user.name,
@@ -86,17 +85,17 @@ export function MainNav({ items, children, user }: MainNavProps) {
                 email: user.email,
               }}
             />
-          ) : (
-            <Link
-              href="/login"
-              className={cn(
-                buttonVariants({ variant: "secondary", size: "sm" }),
-                "px-4",
-              )}
-            >
-              Login
-            </Link>
-          )}
+          ) : ( */}
+          <Link
+            href="/login"
+            className={cn(
+              buttonVariants({ variant: "secondary", size: "sm" }),
+              "px-4",
+            )}
+          >
+            Login
+          </Link>
+          {/* )} */}
         </nav>
       </div>
     </div>

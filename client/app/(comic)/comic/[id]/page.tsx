@@ -2,19 +2,26 @@
 
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
-import { trpc } from "@/trpc/client";
+import { comicSchema } from "@/lib/validations/comic";
+import { useQuery } from "@tanstack/react-query";
 
 export default function ComicPage({ params }: { params: { id: string } }) {
-  const { data, isLoading, isError } = trpc.comic.byId.useQuery(
-    {
-      id: parseInt(params.id),
+  const {
+    data: comic,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["comic", params.id],
+    queryFn: async () => {
+      const data = await fetch("http://localhost:8080/comics/" + params.id);
+
+      if (!data.ok) {
+        throw new Error("Error fetching comics");
+      }
+
+      return comicSchema.parse(await data.json());
     },
-    {
-      // refetchOnMount: false,
-      refetchOnReconnect: false,
-      // refetchOnWindowFocus: false,
-    },
-  );
+  });
 
   // const addToCollectionMutation =
   //   trpc.comic.addToPersonalCollection.useMutation();
@@ -66,35 +73,35 @@ export default function ComicPage({ params }: { params: { id: string } }) {
       <div className="flex flex-col items-center justify-center gap-4">
         <div className="flex items-center justify-center gap-2">
           {"Series: "}
-          <h1 className="text-xl font-bold">{data?.seriesTitle}</h1>
+          <h1 className="text-xl font-bold">{comic?.seriesTitle}</h1>
         </div>
-        {data?.storyTitle ? (
+        {comic?.storyTitle ? (
           <div className="flex items-center justify-center gap-2">
             {"Story Title: "}
-            <h1 className="text-base font-medium">{data?.storyTitle}</h1>
+            <h1 className="text-base font-medium">{comic?.storyTitle}</h1>
           </div>
         ) : (
           <></>
         )}
         <div className="flex items-center justify-center gap-2">
           {"Volume: "}
-          <h1 className="text-base font-medium">{data?.volumeNumber}</h1>
+          <h1 className="text-base font-medium">{comic?.volumeNumber}</h1>
         </div>
         <div className="flex items-center justify-center gap-2">
           {"Issue: "}
-          <h1 className="text-base font-medium">{data?.issueNumber}</h1>
+          <h1 className="text-base font-medium">{comic?.issueNumber}</h1>
         </div>
-        {data.description ? (
+        {comic?.description ? (
           <div className="flex items-center justify-center gap-2">
             {"Description: "}
-            <h1 className="text-base font-medium">{data?.description}</h1>
+            <h1 className="text-base font-medium">{comic?.description}</h1>
           </div>
         ) : (
           <></>
         )}
         <div className="flex items-center justify-center gap-2">
           {"Publisher: "}
-          <h1 className="text-base font-medium">{data?.publisher}</h1>
+          <h1 className="text-base font-medium">{comic?.publisher}</h1>
         </div>
       </div>
       {/* <Button onClick={handleClick}>Add to Personal Collection</Button> */}

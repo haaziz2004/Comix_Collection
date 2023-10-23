@@ -5,7 +5,8 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import { trpc } from "@/trpc/client";
+import { comicSchema } from "@/lib/validations/comic";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
 export default function Home() {
@@ -13,10 +14,17 @@ export default function Home() {
     data: comics,
     isLoading,
     isError,
-  } = trpc.comic.getAll.useQuery(undefined, {
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+  } = useQuery({
+    queryKey: ["comics"],
+    queryFn: async () => {
+      const data = await fetch("http://localhost:8080/comics/all");
+
+      if (!data.ok) {
+        throw new Error("Error fetching comics");
+      }
+
+      return comicSchema.array().parse(await data.json());
+    },
   });
 
   if (isLoading) {
