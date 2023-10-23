@@ -11,6 +11,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 
 import com.comix.api.comixapi.model.comic.ComicBook;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity(name = "creators")
 public class Creator {
@@ -22,6 +25,7 @@ public class Creator {
     private String name;
 
     @ManyToMany(mappedBy = "creators")
+    @JsonBackReference
     private Set<ComicBook> comics = new HashSet<ComicBook>();
 
     protected Creator() {

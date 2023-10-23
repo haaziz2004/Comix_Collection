@@ -7,5 +7,5 @@ import com.comix.api.comixapi.model.creator.Creator;
 
 @Repository
 public interface CreatorRepository extends CrudRepository<Creator, Long> {
-
+    Creator findByName(String name);
 }

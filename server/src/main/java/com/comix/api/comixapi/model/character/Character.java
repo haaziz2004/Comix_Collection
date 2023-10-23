@@ -3,14 +3,16 @@ package com.comix.api.comixapi.model.character;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.comix.api.comixapi.model.comic.ComicBook;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
-
-import com.comix.api.comixapi.model.comic.ComicBook;
 
 @Entity(name = "characters")
 public class Character {
@@ -22,6 +24,7 @@ public class Character {
     private String name;
 
     @ManyToMany(mappedBy = "principleCharacters")
+    @JsonBackReference
     private Set<ComicBook> comics = new HashSet<ComicBook>();
 
     protected Character() {

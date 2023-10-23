@@ -3,12 +3,11 @@ package com.comix.api.comixapi.model.user;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.comix.api.comixapi.model.collection.PersonalCollectionDatabase;
-import com.comix.api.comixapi.model.usercomic.UserComic;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.comix.api.comixapi.model.comic.ComicBook;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,8 +16,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 
 @Entity
@@ -26,6 +23,7 @@ import jakarta.persistence.Table;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonProperty("id")
     private Long id;
 
     @Column(unique = true)
@@ -43,13 +41,10 @@ public class User {
         USER, ADMIN
     }
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @PrimaryKeyJoinColumn(name = "personal_collection_id")
-    @JsonProperty("personalCollection")
-    private PersonalCollectionDatabase personalCollection;
-
     @OneToMany(mappedBy = "user")
-    private Set<UserComic> userComics = new HashSet<UserComic>();
+    @JsonProperty("userComics")
+    @JsonManagedReference
+    private Set<ComicBook> userComics = new HashSet<ComicBook>();
 
     public User() {
     }
@@ -59,10 +54,10 @@ public class User {
         this.password = password;
     }
 
-    public User(String name, String password, PersonalCollectionDatabase personalCollection) {
+    public User(String name, String password, Set<ComicBook> userComics) {
         this.username = name;
         this.password = password;
-        this.personalCollection = personalCollection;
+        this.userComics = userComics;
     }
 
     // Getters
@@ -78,17 +73,8 @@ public class User {
         return role;
     }
 
-    public PersonalCollectionDatabase getPersonalCollection() {
-        return personalCollection;
-    }
-
-    @JsonIgnore
-    public Set<UserComic> getUserComics() {
+    public Set<ComicBook> getUserComics() {
         return userComics;
-    }
-
-    public long getId() {
-        return id;
     }
 
     // Setters
@@ -104,28 +90,16 @@ public class User {
         this.role = role;
     }
 
-    public void setPersonalCollection(PersonalCollectionDatabase personalCollection) {
-        this.personalCollection = personalCollection;
-    }
-
-    public void setUserComics(Set<UserComic> userComics) {
+    public void setUserComics(Set<ComicBook> userComics) {
         this.userComics = userComics;
     }
 
     // Methods
-    public void addComic(UserComic userComic) {
+    public void addComic(ComicBook userComic) {
         userComics.add(userComic);
     }
 
-    public void removeComic(UserComic userComic) {
+    public void removeComic(ComicBook userComic) {
         userComics.remove(userComic);
-    }
-
-    public void add(PersonalCollectionDatabase collection) {
-        this.personalCollection = collection;
-    }
-
-    public void remove(PersonalCollectionDatabase collection) {
-        this.personalCollection = null;
     }
 }
