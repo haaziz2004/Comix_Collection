@@ -3,6 +3,7 @@ package com.comix.api.comixapi.model.comic;
 import java.util.Set;
 
 import com.comix.api.comixapi.model.character.Character;
+import com.comix.api.comixapi.model.collection.CollectionElement;
 import com.comix.api.comixapi.model.creator.Creator;
 import com.comix.api.comixapi.model.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -27,7 +28,7 @@ import jakarta.persistence.UniqueConstraint;
         @UniqueConstraint(name = "UniquePublisherSeriesTitleVolumeNumberIssueNumberPublicationDate", columnNames = {
                 "publisher", "series_title", "volume_number",
                 "issue_number", "publication_date", "user_id" }) })
-public class ComicBook implements IComic {
+public class ComicBook implements IComic, CollectionElement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonProperty("id")
@@ -178,6 +179,10 @@ public class ComicBook implements IComic {
         return storyTitle;
     }
 
+    public Long getId() {
+        return id;
+    }
+
     // Setters
     public void setPublisher(String publisher) {
         this.publisher = publisher;
@@ -271,5 +276,10 @@ public class ComicBook implements IComic {
                 + principleCharacters + ", publisher=" + publisher + ", seriesTitle=" + seriesTitle + ", slabbed="
                 + slabbed + ", storyTitle=" + storyTitle + ", user=" + user + ", value=" + value + ", volumeNumber="
                 + volumeNumber + "]";
+    }
+
+    @Override
+    public int getNumberOfIssues() {
+        return 1;
     }
 }

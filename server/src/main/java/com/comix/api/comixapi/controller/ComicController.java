@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.comix.api.comixapi.model.comic.ComicBook;
 import com.comix.api.comixapi.requestbody.ComicAddCreatorRequestBody;
+import com.comix.api.comixapi.requestbody.ComicUpdateRequestBody;
 import com.comix.api.comixapi.requestbody.CreateComicRequestBody;
 import com.comix.api.comixapi.service.ComicService;
 
@@ -70,7 +71,7 @@ public class ComicController {
     }
 
     @PostMapping("{id}/update")
-    public ResponseEntity<ComicBook> updateComic(@PathVariable Long id, @RequestBody CreateComicRequestBody body) {
+    public ResponseEntity<ComicBook> updateComic(@PathVariable Long id, @RequestBody ComicUpdateRequestBody body) {
         log.info("Updating comic with id: " + id);
 
         ComicBook comic = comicService.updateComic(id, body);

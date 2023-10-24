@@ -11,6 +11,7 @@ import com.comix.api.comixapi.repository.CharacterRepository;
 import com.comix.api.comixapi.repository.ComicRepository;
 import com.comix.api.comixapi.repository.CreatorRepository;
 import com.comix.api.comixapi.repository.UserRepository;
+import com.comix.api.comixapi.requestbody.ComicUpdateRequestBody;
 import com.comix.api.comixapi.requestbody.CreateComicRequestBody;
 import com.comix.api.comixapi.model.character.Character;
 
@@ -33,7 +34,7 @@ public class ComicService {
         return comicRepository.findAllByUserIdIsNull();
     }
 
-    public ComicBook updateComic(Long id, CreateComicRequestBody body) {
+    public ComicBook updateComic(Long id, ComicUpdateRequestBody body) {
         ComicBook comic = comicRepository.findById(id).orElse(null);
 
         if (comic == null) {
@@ -47,28 +48,81 @@ public class ComicService {
         String seriesTitle = body.getSeriesTitle();
         String volumeNumber = body.getVolumeNumber();
         String publicationDate = body.getPublicationDate();
+        String value = body.getValue();
+        String grade = body.getGrade();
+        String slabbed = body.getSlabbed();
+        String creators = body.getCreators();
+        String principleCharacters = body.getPrincipleCharacters();
 
         // check which fields aren't null and update them
         if (storyTitle != null) {
             comic.setStoryTitle(storyTitle);
         }
-        if (publisher != null) {
+        if (publisher != null && !publisher.equals("")) {
             comic.setPublisher(publisher);
         }
-        if (issueNumber != null) {
+        if (!issueNumber.equals("") && issueNumber != null) {
             comic.setIssueNumber(issueNumber);
         }
-        if (description != null) {
-            comic.setDescription(description);
-        }
-        if (seriesTitle != null) {
+        comic.setDescription(description);
+
+        if (!seriesTitle.equals("") && seriesTitle != null) {
             comic.setSeriesTitle(seriesTitle);
         }
-        if (volumeNumber != null) {
+        if (!volumeNumber.equals("") && volumeNumber != null) {
             comic.setVolumeNumber(volumeNumber);
         }
-        if (publicationDate != null) {
+        if (!publicationDate.equals("") && publicationDate != null) {
             comic.setPublicationDate(publicationDate);
+        }
+        if (value != null) {
+            comic.setValue(Double.parseDouble(value));
+        }
+        if (grade != null) {
+            comic.setGrade(Integer.parseInt(grade));
+        }
+        if (slabbed != null) {
+            comic.setSlabbed(Boolean.parseBoolean(slabbed));
+        }
+        if (creators != null) {
+            // split creators by comma
+            String[] creatorsArr = creators.split(",");
+            if (creatorsArr.length == 0) {
+                return null;
+            }
+            for (String creatorName : creatorsArr) {
+                if (creatorName.equals("")) {
+                    continue;
+                }
+                Creator creator = creatorRepository.findByName(creatorName.trim());
+
+                if (creator == null) {
+                    creator = new Creator(creatorName.trim());
+                    creator = creatorRepository.save(creator);
+                }
+
+                comic.addCreator(creator);
+            }
+        }
+        if (principleCharacters != null) {
+            // split principle characters by comma
+            String[] charactersArr = principleCharacters.split(",");
+            if (charactersArr.length == 0) {
+                return null;
+            }
+            for (String characterName : charactersArr) {
+                if (characterName.equals("")) {
+                    continue;
+                }
+                Character character = characterRepository.findByName(characterName.trim());
+
+                if (character == null) {
+                    character = new Character(characterName.trim());
+                    character = characterRepository.save(character);
+                }
+
+                comic.addCharacter(character);
+            }
         }
 
         return comicRepository.save(comic);

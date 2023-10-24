@@ -26,7 +26,7 @@ public class User {
     @JsonProperty("id")
     private Long id;
 
-    @Column(unique = true)
+    @Column(unique = true, length = 32)
     @JsonProperty("username")
     private String username;
 
@@ -101,5 +101,9 @@ public class User {
 
     public void removeComic(ComicBook userComic) {
         userComics.remove(userComic);
+    }
+
+    public Long getId() {
+        return id;
     }
 }
