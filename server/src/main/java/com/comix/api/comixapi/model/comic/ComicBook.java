@@ -282,4 +282,17 @@ public class ComicBook implements IComic, CollectionElement {
     public int getNumberOfIssues() {
         return 1;
     }
+
+    @Override
+    public void addElement(CollectionElement element) {
+    }
+
+    @Override
+    public void removeElement(CollectionElement element) {
+    }
+
+    @Override
+    public Set<CollectionElement> getElements() {
+        return null;
+    }
 }

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.comix.api.comixapi.model.collection.PersonalCollection;
+import com.comix.api.comixapi.model.collection.Collection;
 import com.comix.api.comixapi.model.comic.ComicBook;
 import com.comix.api.comixapi.model.user.User;
 import com.comix.api.comixapi.requestbody.CreateUserRequestBody;
@@ -139,11 +139,11 @@ public class UserController {
     }
 
     @GetMapping("/{id}/collection")
-    public ResponseEntity<PersonalCollection> getPersonalCollection(@PathVariable Long id) {
+    public ResponseEntity<Collection> getPersonalCollection(@PathVariable Long id) {
         log.info("Getting personal collection for user with id: " + id);
 
         try {
-            PersonalCollection collection = userService.getPersonalCollection(id);
+            Collection collection = userService.getPersonalCollection(id);
             return ResponseEntity.ok(collection);
 
         } catch (IllegalArgumentException e) {

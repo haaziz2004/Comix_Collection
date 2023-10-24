@@ -1,16 +1,17 @@
 package com.comix.api.comixapi.service;
 
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.comix.api.comixapi.model.collection.Collection;
+import com.comix.api.comixapi.model.collection.CollectionElement;
+import com.comix.api.comixapi.model.comic.ComicBook;
 import com.comix.api.comixapi.model.user.User;
 import com.comix.api.comixapi.repository.ComicRepository;
 import com.comix.api.comixapi.repository.UserRepository;
-import com.comix.api.comixapi.model.collection.PersonalCollection;
-import com.comix.api.comixapi.model.comic.ComicBook;
-
-import java.util.List;
-import java.util.Set;
 
 @Service
 public class UserService {
@@ -115,7 +116,7 @@ public class UserService {
         return userRepository.findById(id).orElse(null);
     }
 
-    public PersonalCollection getPersonalCollection(Long userId) {
+    public Collection getPersonalCollection(Long userId) {
         User user = userRepository.findById(userId).orElse(null);
 
         if (user == null) {
@@ -124,26 +125,64 @@ public class UserService {
 
         Set<ComicBook> comics = user.getUserComics();
 
-        PersonalCollection collection = new PersonalCollection();
-        // create 3 collection for 3 different publishers
-        PersonalCollection publisher1 = new PersonalCollection();
-        PersonalCollection publisher2 = new PersonalCollection();
-        PersonalCollection publisher3 = new PersonalCollection();
+        Collection collection = new Collection();
 
-        collection.addElement(publisher1);
-        collection.addElement(publisher2);
-        collection.addElement(publisher3);
-
-        // add comics to random publisher
-        for (ComicBook comic : comics) {
-            int random = (int) (Math.random() * 3);
-            if (random == 0) {
-                publisher1.addElement(comic);
-            } else if (random == 1) {
-                publisher2.addElement(comic);
-            } else {
-                publisher3.addElement(comic);
+        for (CollectionElement comic : comics) {
+            // Start at the top level
+            for (CollectionElement publisher : collection.getElements()) {
+                if (publisher.getPublisher().equals(comic.getPublisher())) {
+                    // Move to the Publisher level
+                    for (CollectionElement seriesTitle : publisher.getElements()) {
+                        if (seriesTitle.getSeriesTitle().equals(comic.getSeriesTitle())) {
+                            // Continue this process for VolumeNumber and IssueNumber levels
+                            for (CollectionElement volumeNumber : seriesTitle.getElements()) {
+                                if (volumeNumber.getVolumeNumber().equals(comic.getVolumeNumber())) {
+                                    for (CollectionElement issueNumber : volumeNumber.getElements()) {
+                                        if (issueNumber.getIssueNumber().equals(comic.getIssueNumber())) {
+                                            // Insert the comic at this level
+                                            issueNumber.addElement(comic);
+                                            break;
+                                        }
+                                    }
+                                    // Create a new IssueNumber and insert the comic
+                                    Collection newIssueNumber = new Collection();
+                                    newIssueNumber.addElement(comic);
+                                    volumeNumber.addElement(newIssueNumber);
+                                    break;
+                                }
+                            }
+                            // Create a new VolumeNumber and IssueNumber and insert the comic
+                            Collection newVolumeNumber = new Collection();
+                            Collection newIssueNumber = new Collection();
+                            newIssueNumber.addElement(comic);
+                            newVolumeNumber.addElement(newIssueNumber);
+                            seriesTitle.addElement(newVolumeNumber);
+                            break;
+                        }
+                    }
+                    // Create a new SeriesTitle, VolumeNumber, and IssueNumber and insert the comic
+                    Collection newSeriesTitle = new Collection();
+                    Collection newVolumeNumber = new Collection();
+                    Collection newIssueNumber = new Collection();
+                    newIssueNumber.addElement(comic);
+                    newVolumeNumber.addElement(newIssueNumber);
+                    newSeriesTitle.addElement(newVolumeNumber);
+                    publisher.addElement(newSeriesTitle);
+                    break;
+                }
             }
+
+            // If no matching publisher is found, create a new Publisher, SeriesTitle,
+            // VolumeNumber, and IssueNumber, and insert the comic
+            Collection newPublisher = new Collection();
+            Collection newSeriesTitle = new Collection();
+            Collection newVolumeNumber = new Collection();
+            Collection newIssueNumber = new Collection();
+            newIssueNumber.addElement(comic);
+            newVolumeNumber.addElement(newIssueNumber);
+            newSeriesTitle.addElement(newVolumeNumber);
+            newPublisher.addElement(newSeriesTitle);
+            collection.addElement(newPublisher);
         }
 
         return collection;

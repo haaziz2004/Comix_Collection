@@ -1,6 +1,7 @@
 package com.comix.api.comixapi.controller;
 
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.comix.api.comixapi.model.comic.ComicBook;
 import com.comix.api.comixapi.requestbody.ComicAddCreatorRequestBody;
+import com.comix.api.comixapi.requestbody.ComicSearchRequestBody;
 import com.comix.api.comixapi.requestbody.ComicUpdateRequestBody;
 import com.comix.api.comixapi.requestbody.CreateComicRequestBody;
 import com.comix.api.comixapi.service.ComicService;
@@ -152,5 +154,28 @@ public class ComicController {
         }
 
         return ResponseEntity.ok(comic);
+    }
+
+    @PostMapping("/search")
+    public ResponseEntity<Set<ComicBook>> searchComics(@RequestBody ComicSearchRequestBody body) {
+        String queryString = body.getQueryString();
+        ComicSearchRequestBody.SearchType searchType = body.getSearchType();
+        ComicSearchRequestBody.SortType sortType = body.getSortType();
+
+        // if missing any fields then return bad request
+        if (queryString == null || searchType == null || sortType == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        log.info("Searching for comics with query string: " + queryString + " and search type: " + searchType
+                + " and sort type: " + sortType);
+
+        Set<ComicBook> comics = comicService.searchComics(queryString, searchType, sortType);
+
+        if (comics == null || comics.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(comics);
     }
 }

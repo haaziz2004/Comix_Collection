@@ -1,6 +1,8 @@
 package com.comix.api.comixapi.service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,6 +13,7 @@ import com.comix.api.comixapi.repository.CharacterRepository;
 import com.comix.api.comixapi.repository.ComicRepository;
 import com.comix.api.comixapi.repository.CreatorRepository;
 import com.comix.api.comixapi.repository.UserRepository;
+import com.comix.api.comixapi.requestbody.ComicSearchRequestBody;
 import com.comix.api.comixapi.requestbody.ComicUpdateRequestBody;
 import com.comix.api.comixapi.requestbody.CreateComicRequestBody;
 import com.comix.api.comixapi.model.character.Character;
@@ -222,5 +225,34 @@ public class ComicService {
         comic.setSlabbed(slabbed);
 
         return comicRepository.save(comic);
+    }
+
+    public Set<ComicBook> searchComics(String queryString, ComicSearchRequestBody.SearchType searchType,
+            ComicSearchRequestBody.SortType sortType) {
+        // Any search terms should be matched against any of the following fields:
+        // series title, principle characters, creator names, description
+        Set<ComicBook> comics = new HashSet<>();
+
+        if (searchType == ComicSearchRequestBody.SearchType.EXACT) {
+            comics.addAll(comicRepository.findAllBySeriesTitle(queryString));
+            comics.addAll(comicRepository.findAllByDescription(queryString));
+            List<Character> character = characterRepository.findAllByName(queryString);
+            for (Character c : character)
+                comics.addAll(comicRepository.findAllByPrincipleCharacters(c));
+
+            List<Creator> creator = creatorRepository.findAllByName(queryString);
+            for (Creator c : creator)
+                comics.addAll(comicRepository.findAllByCreators(c));
+        } else if (searchType == ComicSearchRequestBody.SearchType.PARTIAL) {
+            comics.addAll(comicRepository.findAllBySeriesTitleContaining(queryString));
+            comics.addAll(comicRepository.findAllByDescriptionContaining(queryString));
+
+            for (Character c : characterRepository.findAllByNameContaining(queryString))
+                comics.addAll(comicRepository.findAllByPrincipleCharacters(c));
+            for (Creator c : creatorRepository.findAllByNameContaining(queryString))
+                comics.addAll(comicRepository.findAllByCreators(c));
+        }
+
+        return comics;
     }
 }
