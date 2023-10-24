@@ -1,9 +1,17 @@
 "use client";
 
+import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { comicSchema } from "@/lib/validations/comic";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { z } from "zod";
+
+const schema = z.object({
+  comicId: z.number().int().positive(),
+});
+
+type ComicId = z.infer<typeof schema>;
 
 export default function ComicPage({ params }: { params: { id: string } }) {
   const {
@@ -23,42 +31,64 @@ export default function ComicPage({ params }: { params: { id: string } }) {
     },
   });
 
-  // const addToCollectionMutation =
-  //   trpc.comic.addToPersonalCollection.useMutation();
+  const addToCollectionMutation = useMutation({
+    mutationKey: ["addToCollection"],
+    mutationFn: async (input: ComicId) => {
+      console.log(input);
+      const data = await fetch("/api/user/addComic", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(input),
+      });
 
-  // const utils = trpc.useContext();
+      if (!data.ok) {
+        switch (data.status) {
+          case 409:
+            throw new Error("CONFLICT");
+          case 404:
+            throw new Error("NOT FOUND");
+          default:
+            throw new Error("Error adding comic to collection");
+        }
+      }
 
-  // function handleClick() {
-  //   addToCollectionMutation.mutate(
-  //     {
-  //       id: parseInt(params.id),
-  //     },
-  //     {
-  //       onSuccess: () => {
-  //         // TODO: doesn't work
-  //         void utils.user.getPersonalCollection.invalidate();
-  //         return toast({
-  //           title: "Comic added to personal collection",
-  //           variant: "success",
-  //         });
-  //       },
-  //       onError: (error) => {
-  //         if (error.data?.code === "CONFLICT") {
-  //           return toast({
-  //             title: "Comic already in personal collection",
-  //             description: "You can only add a comic to your collection once",
-  //             variant: "destructive",
-  //           });
-  //         }
-  //         return toast({
-  //           title: "Error adding comic to personal collection",
-  //           description: "Please try again later",
-  //           variant: "destructive",
-  //         });
-  //       },
-  //     },
-  //   );
-  // }
+      const comics = comicSchema.array().parse(await data.json());
+
+      return comics;
+    },
+  });
+
+  function handleClick() {
+    addToCollectionMutation.mutate(
+      {
+        comicId: parseInt(params.id),
+      },
+      {
+        onSuccess: () => {
+          return toast({
+            title: "Comic added to personal collection",
+            variant: "success",
+          });
+        },
+        onError: (error) => {
+          if (error.message === "CONFLICT") {
+            return toast({
+              title: "Comic already in personal collection",
+              description: "You can only add a comic to your collection once",
+              variant: "destructive",
+            });
+          }
+          return toast({
+            title: "Error adding comic to personal collection",
+            description: "Please try again later",
+            variant: "destructive",
+          });
+        },
+      },
+    );
+  }
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -68,43 +98,58 @@ export default function ComicPage({ params }: { params: { id: string } }) {
     return <div>Error loading comic</div>;
   }
 
+  if (!comic) {
+    return <div>Comic not found</div>;
+  }
+
   return (
     <div className="mt-10 flex flex-col items-center justify-center gap-4">
-      <div className="flex flex-col items-center justify-center gap-4">
-        <div className="flex items-center justify-center gap-2">
-          {"Series: "}
-          <h1 className="text-xl font-bold">{comic?.seriesTitle}</h1>
-        </div>
-        {comic?.storyTitle ? (
-          <div className="flex items-center justify-center gap-2">
-            {"Story Title: "}
-            <h1 className="text-base font-medium">{comic?.storyTitle}</h1>
-          </div>
-        ) : (
-          <></>
-        )}
-        <div className="flex items-center justify-center gap-2">
-          {"Volume: "}
-          <h1 className="text-base font-medium">{comic?.volumeNumber}</h1>
-        </div>
-        <div className="flex items-center justify-center gap-2">
-          {"Issue: "}
-          <h1 className="text-base font-medium">{comic?.issueNumber}</h1>
-        </div>
-        {comic?.description ? (
-          <div className="flex items-center justify-center gap-2">
-            {"Description: "}
-            <h1 className="text-base font-medium">{comic?.description}</h1>
-          </div>
-        ) : (
-          <></>
-        )}
-        <div className="flex items-center justify-center gap-2">
-          {"Publisher: "}
-          <h1 className="text-base font-medium">{comic?.publisher}</h1>
+      <div className="flex flex-col items-center justify-center gap-10">
+        <div className="grid grid-cols-2 flex-col items-center justify-center gap-4">
+          <div>Series Title</div>
+          <div>{comic.seriesTitle}</div>
+          {comic.storyTitle && (
+            <>
+              <div>Story Title</div>
+              <div>{comic.storyTitle}</div>
+            </>
+          )}
+          <div>Volume Number</div>
+          <div>{comic.volumeNumber}</div>
+          <div>Issue Number</div>
+          <div>{comic.issueNumber}</div>
+          {comic.description && (
+            <>
+              <div>Description</div>
+              <div>{comic.description}</div>
+            </>
+          )}
+          {comic.creators && comic.creators?.length > 0 && (
+            <>
+              <div>Creators</div>
+              <div>{comic.creators.join(", ")}</div>
+            </>
+          )}
+          {comic.principleCharacters &&
+            comic.principleCharacters?.length > 0 && (
+              <>
+                <div>Principle Characters</div>
+                <div>{comic.principleCharacters.join(", ")}</div>
+              </>
+            )}
+          <div>Publication Date</div>
+          <div>{comic.publicationDate}</div>
         </div>
       </div>
-      {/* <Button onClick={handleClick}>Add to Personal Collection</Button> */}
+      <Button
+        onClick={handleClick}
+        disabled={addToCollectionMutation.isPending}
+      >
+        {addToCollectionMutation.isPending && (
+          <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+        )}
+        Add to Personal Collection
+      </Button>
     </div>
   );
 }

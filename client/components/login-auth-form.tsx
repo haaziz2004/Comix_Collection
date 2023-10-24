@@ -1,24 +1,24 @@
 "use client";
 
-import * as React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import * as React from "react";
 import { useForm } from "react-hook-form";
 import type * as z from "zod";
 
-import { cn } from "@/lib/utils";
-import { userAuthSchema } from "@/lib/validations/auth";
+import { Icons } from "@/components/icons";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
-import { Icons } from "@/components/icons";
+import { cn } from "@/lib/utils";
+import { userAuthSchema } from "@/lib/validations/auth";
 
-type UserAuthFormProps = React.HTMLAttributes<HTMLDivElement>;
+type LoginAuthFormProps = React.HTMLAttributes<HTMLDivElement>;
 
 type FormData = z.infer<typeof userAuthSchema>;
 
-export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
+export function LoginAuthForm({ className, ...props }: LoginAuthFormProps) {
   const {
     register,
     handleSubmit,
@@ -27,14 +27,12 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     resolver: zodResolver(userAuthSchema),
   });
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
-  const [isGitHubLoading, setIsGitHubLoading] = React.useState<boolean>(false);
-  const searchParams = useSearchParams();
   const router = useRouter();
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
 
-    const signInResult = await fetch("/api/auth", {
+    const signInResult = await fetch("/api/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -45,11 +43,20 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     setIsLoading(false);
 
     if (!signInResult?.ok) {
-      return toast({
-        title: "Something went wrong.",
-        description: "Your sign in request failed. Please try again.",
-        variant: "destructive",
-      });
+      switch (signInResult.status) {
+        case 401:
+          return toast({
+            title: "Incorrect username or password.",
+            description: "Please try again.",
+            variant: "destructive",
+          });
+        case 500:
+          return toast({
+            title: "Something went wrong.",
+            description: "Your sign in request failed. Please try again.",
+            variant: "destructive",
+          });
+      }
     }
 
     toast({
@@ -59,14 +66,16 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     });
 
     // redirect to home page
+    router.refresh();
     return router.push("/");
   }
 
   return (
     <div className={cn("grid gap-6", className)} {...props}>
+      {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="grid gap-2">
-          <div className="grid gap-1">
+          <div className="grid gap-2">
             <Label className="sr-only" htmlFor="username">
               Username
             </Label>
@@ -77,7 +86,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               autoCapitalize="none"
               autoComplete="username"
               autoCorrect="off"
-              disabled={isLoading || isGitHubLoading}
+              disabled={isLoading}
               {...register("username")}
             />
             {errors?.username && (
@@ -95,7 +104,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               autoCapitalize="none"
               autoComplete="password"
               autoCorrect="off"
-              disabled={isLoading || isGitHubLoading}
+              disabled={isLoading}
               {...register("password")}
             />
             {errors?.password && (
@@ -108,36 +117,10 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             {isLoading && (
               <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
             )}
-            Sign In with Your Username and Password
+            Sign In
           </button>
         </div>
       </form>
-      {/* <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            Or continue with
-          </span>
-        </div>
-      </div>
-      <button
-        type="button"
-        className={cn(buttonVariants({ variant: "outline" }))}
-        onClick={() => {
-          setIsGitHubLoading(true)
-          // signIn("github")
-        }}
-        disabled={isLoading || isGitHubLoading}
-      >
-        {isGitHubLoading ? (
-          <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-        ) : (
-          <Icons.gitHub className="mr-2 h-4 w-4" />
-        )}{" "}
-        Github
-      </button> */}
     </div>
   );
 }

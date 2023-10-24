@@ -8,21 +8,21 @@ import { MobileNav } from "@/components/mobile-nav";
 import { buttonVariants } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
+import { type userSchema } from "@/lib/validations/user";
 import { type MainNavItem } from "@/types";
 import { useState } from "react";
+import { type z } from "zod";
 import { UserAccountNav } from "./user-account-nav";
+
+type userType = z.infer<typeof userSchema>;
 
 interface MainNavProps {
   items?: MainNavItem[];
   children?: React.ReactNode;
-  // user:
-  //   | (User & {
-  //       id: string;
-  //     })
-  //   | undefined;
+  user: userType | null;
 }
 
-export function MainNav({ items, children }: MainNavProps) {
+export function MainNav({ items, children, user }: MainNavProps) {
   const segment = useSelectedLayoutSegment();
 
   const [showMobileMenu, setShowMobileMenu] = useState<boolean>(false);
@@ -44,7 +44,8 @@ export function MainNav({ items, children }: MainNavProps) {
                 href={item.disabled ? "#" : item.href}
                 className={cn(
                   "flex items-center text-xl font-medium transition-colors hover:text-foreground/80 sm:text-sm",
-                  item.href.startsWith(`/${segment}`)
+                  item.href.startsWith(`/${segment}`) ||
+                    (item.href === "/" && segment === null)
                     ? "text-foreground"
                     : "text-foreground/60",
                   item.disabled && "cursor-not-allowed opacity-80",
@@ -77,25 +78,23 @@ export function MainNav({ items, children }: MainNavProps) {
       <div className="flex flex-1 items-center space-x-4 sm:justify-end">
         <div className="flex-1 sm:grow-0"></div>
         <nav>
-          {/* {user ? (
+          {user ? (
             <UserAccountNav
               user={{
-                name: user.name,
-                image: user.image,
-                email: user.email,
+                username: user.username,
               }}
             />
-          ) : ( */}
-          <Link
-            href="/login"
-            className={cn(
-              buttonVariants({ variant: "secondary", size: "sm" }),
-              "px-4",
-            )}
-          >
-            Login
-          </Link>
-          {/* )} */}
+          ) : (
+            <Link
+              href="/login"
+              className={cn(
+                buttonVariants({ variant: "secondary", size: "sm" }),
+                "px-4",
+              )}
+            >
+              Login
+            </Link>
+          )}
         </nav>
       </div>
     </div>

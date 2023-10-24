@@ -3,7 +3,7 @@ import { type HomepageConfig } from "@/types";
 export const homepageConfig: HomepageConfig = {
   mainNav: [
     {
-      title: "Home",
+      title: "Comics",
       href: "/",
     },
     {

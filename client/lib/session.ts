@@ -1,10 +1,37 @@
-// export async function getCurrentUser() {
+"use server";
+import { cookies } from "next/headers";
+import { userSchema } from "./validations/user";
 
-//   return session?.user;
-// }
+export async function getCurrentUser() {
+  const userId = cookies().get("userId");
 
-// export async function getCurrentSession() {
-//   const session = await getServerSession(authOptions);
+  if (!userId) {
+    return null;
+  }
 
-//   return session;
-// }
+  const userResult = await fetch(
+    `http://localhost:8080/users/${userId.value}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    },
+  );
+
+  if (!userResult.ok) {
+    return null;
+  }
+
+  const user = userSchema.parse(await userResult.json());
+
+  return user;
+}
+
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function signOut() {
+  // clear cookies
+  cookies().set("userId", "", {
+    maxAge: -1,
+  });
+}

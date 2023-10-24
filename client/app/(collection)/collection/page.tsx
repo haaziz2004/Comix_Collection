@@ -1,23 +1,32 @@
 "use client";
+export const dynamic = "force-dynamic";
 
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardHeader,
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { trpc } from "@/trpc/client";
+import { comicSchema } from "@/lib/validations/comic";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function PersonalCollectionPage() {
-  const { data, isLoading, isError } = trpc.user.getPersonalCollection.useQuery(
-    undefined,
-    {
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
+  const router = useRouter();
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["userComics"],
+    queryFn: async () => {
+      const data = await fetch("api/user/getComics");
+
+      if (!data.ok) {
+        throw new Error("Error fetching comics");
+      }
+
+      return comicSchema.array().parse(await data.json());
     },
-  );
+  });
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -35,31 +44,39 @@ export default function PersonalCollectionPage() {
     <div className="mt-10 flex h-full w-full items-center justify-center">
       <div className="flex flex-col items-center justify-center">
         <h1 className="mb-10 text-4xl font-bold">Personal Collection</h1>
+        {data.length === 0 && (
+          <div className="flex flex-col items-center justify-center gap-5">
+            <div className="text-center">No comics in personal collection</div>
+            <Button
+              onClick={() => {
+                router.push("/");
+              }}
+            >
+              View Comics
+            </Button>
+          </div>
+        )}
         <div className="grid grid-cols-3 gap-4">
-          {data.userComics.map((userComic) => (
-            <Link href={`/comic/${userComic.id}`} key={userComic.id}>
+          {data.map((comic) => (
+            <Link href={`/collection/comic/${comic.id}`} key={comic.id}>
               <Card>
                 <CardHeader className="flex items-center justify-center font-bold">
-                  {userComic.comic.seriesTitle}
+                  {comic.seriesTitle}
                 </CardHeader>
                 <CardContent className="text-center">
                   <div className="line-clamp-3">
-                    {userComic.comic.storyTitle
-                      ? userComic.comic.storyTitle
-                      : "No Title"}
+                    {comic.storyTitle ? comic.storyTitle : "No Title"}
                   </div>
                 </CardContent>
                 <CardFooter className="flex items-center justify-center">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <div className="mr-2">{"Vol. "}</div>
-                      <div className="mr-2">
-                        {userComic.comic.volumeNumber + ","}
-                      </div>
+                      <div className="mr-2">{comic.volumeNumber + ","}</div>
                     </div>
                     <div className="flex items-center">
                       <div className="mr-2">{"Issue "}</div>
-                      <div className="mr-2">{userComic.comic.issueNumber}</div>
+                      <div className="mr-2">{comic.issueNumber}</div>
                     </div>
                   </div>
                 </CardFooter>

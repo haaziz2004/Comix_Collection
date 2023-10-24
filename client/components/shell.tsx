@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-interface AccountShellProps extends React.HTMLAttributes<HTMLDivElement> {}
+type AccountShellProps = React.HTMLAttributes<HTMLDivElement>;
 
 export function AccountShell({
   children,

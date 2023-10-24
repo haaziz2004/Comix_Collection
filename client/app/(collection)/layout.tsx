@@ -1,14 +1,15 @@
 import { MainNav } from "@/components/main-nav";
 import { homepageConfig } from "@/config/homepage";
 import { getCurrentUser } from "@/lib/session";
+import { useRouter } from "next/navigation";
 
-interface HomepageLayoutProps {
+interface CollectionPageLayoutProps {
   children: React.ReactNode;
 }
 
-export default async function HomepageLayout({
+export default async function CollectionPageLayout({
   children,
-}: HomepageLayoutProps) {
+}: CollectionPageLayoutProps) {
   const user = await getCurrentUser();
 
   return (
