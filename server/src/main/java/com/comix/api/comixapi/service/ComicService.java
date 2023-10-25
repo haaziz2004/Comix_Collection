@@ -21,6 +21,7 @@ import com.comix.api.comixapi.requestbody.CreateComicRequestBody;
 
 import com.comix.api.comixapi.model.search.SearchResults;
 import com.comix.api.comixapi.model.search.SortByPublicationDate;
+import com.comix.api.comixapi.model.user.User;
 import com.comix.api.comixapi.model.character.Character;
 
 @Service
@@ -38,8 +39,14 @@ public class ComicService {
         return comicRepository.findById(comicId).orElse(null);
     }
 
-    public List<ComicBook> getAllComics() {
-        return comicRepository.findAllByUserIdIsNull();
+    public List<IComic> getAllComics() {
+        List<IComic> comics = new ArrayList<>(comicRepository.findAllByUserIdIsNull());
+
+        SearchResults comicSorter = new SearchResults(comics);
+
+        comicSorter.doSort();
+
+        return comicSorter.getSearchResults();
     }
 
     public ComicBook updateComic(Long id, ComicUpdateRequestBody body) {
@@ -147,7 +154,7 @@ public class ComicService {
 
         ComicBook comicBook = new ComicBook(publisher, seriesTitle, volumeNumber, issueNumber, publicationDate);
         comicBook.setDescription(description);
-        comicBook.setSeriesTitle(storyTitle);
+        comicBook.setStoryTitle(storyTitle);
 
         try {
             comicBook = comicRepository.save(comicBook);
@@ -271,5 +278,30 @@ public class ComicService {
         comicSorter.doSort();
 
         return comicSorter.getSearchResults();
+    }
+
+    public ComicBook createAndAddComicToUser(Long userId, CreateComicRequestBody body) {
+        User user = userRepository.findById(userId).orElse(null);
+
+        if (user == null) {
+            return null;
+        }
+
+        ComicBook comic = createComic(body);
+
+        if (comic == null) {
+            return null;
+        }
+
+        comic.setUser(user);
+        comic.setSlabbed(false);
+        comic.setGrade(0);
+        comic.setValue(0);
+        comicRepository.save(comic);
+
+        user.addComic(comic);
+        userRepository.save(user);
+
+        return comic;
     }
 }

@@ -3,6 +3,8 @@ package com.comix.api.comixapi.controller;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.Icon;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -34,10 +36,10 @@ public class ComicController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<ComicBook>> getAllComics() {
+    public ResponseEntity<List<IComic>> getAllComics() {
         log.info("Getting all comics");
 
-        List<ComicBook> comics = comicService.getAllComics();
+        List<IComic> comics = comicService.getAllComics();
 
         if (comics == null || comics.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -178,5 +180,20 @@ public class ComicController {
         }
 
         return ResponseEntity.ok(comics);
+    }
+
+    @PostMapping("/create/{userId}")
+    public ResponseEntity<ComicBook> createComicForUser(@PathVariable Long userId,
+            @RequestBody CreateComicRequestBody body) {
+        log.info("Creating comic for user with id: " + userId);
+
+        ComicBook comic = comicService.createAndAddComicToUser(userId, body);
+
+        if (comic == null) {
+            // comic already exists
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(comic);
     }
 }
