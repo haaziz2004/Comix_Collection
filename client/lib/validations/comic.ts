@@ -31,11 +31,11 @@ export const comicSchema = z.object({
 });
 
 export const comicEditSchema = z.object({
-  publisher: z.string().nullable().optional(),
-  seriesTitle: z.string().nullable().optional(),
-  volumeNumber: z.string().nullable().optional(),
-  issueNumber: z.string().nullable().optional(),
-  publicationDate: z.string().nullable().optional(),
+  publisher: z.string().min(1).nullable().optional(),
+  seriesTitle: z.string().min(1).nullable().optional(),
+  volumeNumber: z.string().min(1).nullable().optional(),
+  issueNumber: z.string().min(1).nullable().optional(),
+  publicationDate: z.string().min(1).nullable().optional(),
   storyTitle: z.string().nullable().optional(),
   creators: z.string().nullable().optional(),
   principleCharacters: z.string().nullable().optional(),

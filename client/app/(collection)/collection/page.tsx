@@ -12,8 +12,10 @@ import { comicSchema } from "@/lib/validations/comic";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function PersonalCollectionPage() {
+  const [level, setLevel] = useState(4);
   const router = useRouter();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["userComics"],
@@ -24,7 +26,8 @@ export default function PersonalCollectionPage() {
         throw new Error("Error fetching comics");
       }
 
-      return comicSchema.array().parse(await data.json());
+      // return comicSchema.array().parse(await data.json());
+      return await data.json();
     },
   });
 
@@ -44,7 +47,7 @@ export default function PersonalCollectionPage() {
     <div className="mt-10 flex h-full w-full items-center justify-center">
       <div className="flex flex-col items-center justify-center">
         <h1 className="mb-10 text-4xl font-bold">Personal Collection</h1>
-        {data.length === 0 && (
+        {data.elements.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-5">
             <div className="text-center">No comics in personal collection</div>
             <Button
@@ -57,32 +60,45 @@ export default function PersonalCollectionPage() {
           </div>
         )}
         <div className="grid grid-cols-3 gap-4">
-          {data.map((comic) => (
-            <Link href={`/collection/comic/${comic.id}`} key={comic.id}>
-              <Card>
-                <CardHeader className="flex items-center justify-center font-bold">
-                  {comic.seriesTitle}
-                </CardHeader>
-                <CardContent className="text-center">
-                  <div className="line-clamp-3">
-                    {comic.storyTitle ? comic.storyTitle : "No Title"}
-                  </div>
-                </CardContent>
-                <CardFooter className="flex items-center justify-center">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="mr-2">{"Vol. "}</div>
-                      <div className="mr-2">{comic.volumeNumber + ","}</div>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="mr-2">{"Issue "}</div>
-                      <div className="mr-2">{comic.issueNumber}</div>
-                    </div>
-                  </div>
-                </CardFooter>
-              </Card>
-            </Link>
-          ))}
+          {/* check if level = 4 and then loop over data elements */}
+          {level === 4 &&
+            data.elements[0].elements[0].elements[0].elements[0].elements.map(
+              (comic) => {
+                return (
+                  <Card
+                    key={comic.id}
+                    onClick={() => {
+                      setLevel(1);
+                    }}
+                  >
+                    <CardHeader>
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="text-xl font-bold">
+                          {comic.seriesTitle}
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="text-xl font-bold">
+                          {comic.storyTitle}
+                        </div>
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="text-xl font-bold">{comic.value}</div>
+                      </div>
+                    </CardFooter>
+                  </Card>
+                );
+              },
+            )}
+
+          <div className="flex flex-col items-center justify-center">
+            <div>Value: {data.value}</div>
+            <div>Number of issues: {data.numberOfIssues}</div>
+          </div>
         </div>
       </div>
     </div>

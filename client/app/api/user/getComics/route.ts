@@ -9,14 +9,15 @@ export async function GET(request: NextRequest) {
   }
 
   const response = await fetch(
-    "http://localhost:8080/users/" + userId.value + "/comics/all",
+    "http://localhost:8080/users/" + userId.value + "/collection",
     {
       method: "GET",
       cache: "no-store",
     },
   );
 
-  const comics = comicSchema.array().parse(await response.json());
+  // const comics = comicSchema.array().parse(await response.json());
+  const comics = await response.json();
 
   return new Response(JSON.stringify(comics), {
     status: 200,
