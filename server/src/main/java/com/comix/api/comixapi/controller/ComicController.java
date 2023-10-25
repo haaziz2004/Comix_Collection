@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.comix.api.comixapi.model.comic.ComicBook;
+import com.comix.api.comixapi.model.comic.IComic;
 import com.comix.api.comixapi.requestbody.ComicAddCreatorRequestBody;
 import com.comix.api.comixapi.requestbody.ComicSearchRequestBody;
 import com.comix.api.comixapi.requestbody.ComicUpdateRequestBody;
@@ -157,7 +158,7 @@ public class ComicController {
     }
 
     @PostMapping("/search")
-    public ResponseEntity<Set<ComicBook>> searchComics(@RequestBody ComicSearchRequestBody body) {
+    public ResponseEntity<List<IComic>> searchComics(@RequestBody ComicSearchRequestBody body) {
         String queryString = body.getQueryString();
         ComicSearchRequestBody.SearchType searchType = body.getSearchType();
         ComicSearchRequestBody.SortType sortType = body.getSortType();
@@ -170,7 +171,7 @@ public class ComicController {
         log.info("Searching for comics with query string: " + queryString + " and search type: " + searchType
                 + " and sort type: " + sortType);
 
-        Set<ComicBook> comics = comicService.searchComics(queryString, searchType, sortType);
+        List<IComic> comics = comicService.searchComics(queryString, searchType, sortType);
 
         if (comics == null || comics.isEmpty()) {
             return ResponseEntity.notFound().build();

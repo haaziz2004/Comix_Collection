@@ -183,6 +183,10 @@ public class ComicBook implements IComic, CollectionElement {
         return id;
     }
 
+    public Boolean getSlabbed() {
+        return slabbed;
+    }
+
     // Setters
     public void setPublisher(String publisher) {
         this.publisher = publisher;
@@ -242,10 +246,6 @@ public class ComicBook implements IComic, CollectionElement {
 
     public void setGrade(int graded) {
         this.grade = graded;
-    }
-
-    public Boolean isSlabbed() {
-        return slabbed;
     }
 
     public void setSlabbed(Boolean slabbed) {

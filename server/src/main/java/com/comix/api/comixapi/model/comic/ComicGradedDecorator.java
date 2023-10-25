@@ -1,14 +1,15 @@
 package com.comix.api.comixapi.model.comic;
 
 public class ComicGradedDecorator extends BaseComicDecorator {
-    private int grade;
-
-    public ComicGradedDecorator(IComic wrapped, int grade) {
+    public ComicGradedDecorator(IComic wrapped) {
         super(wrapped);
-        this.grade = grade;
     }
 
     public double getValue() {
-        return super.getValue() * grade;
+        int grade = super.getGrade();
+        if (grade == 1) {
+            return super.getValue() * 0.1;
+        }
+        return Math.log10(grade) * super.getValue();
     }
 }

@@ -1,5 +1,6 @@
 package com.comix.api.comixapi.service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.comix.api.comixapi.model.comic.ComicBook;
+import com.comix.api.comixapi.model.comic.IComic;
 import com.comix.api.comixapi.model.creator.Creator;
 import com.comix.api.comixapi.repository.CharacterRepository;
 import com.comix.api.comixapi.repository.ComicRepository;
@@ -16,6 +18,9 @@ import com.comix.api.comixapi.repository.UserRepository;
 import com.comix.api.comixapi.requestbody.ComicSearchRequestBody;
 import com.comix.api.comixapi.requestbody.ComicUpdateRequestBody;
 import com.comix.api.comixapi.requestbody.CreateComicRequestBody;
+
+import com.comix.api.comixapi.model.search.SearchResults;
+import com.comix.api.comixapi.model.search.SortByPublicationDate;
 import com.comix.api.comixapi.model.character.Character;
 
 @Service
@@ -227,11 +232,11 @@ public class ComicService {
         return comicRepository.save(comic);
     }
 
-    public Set<ComicBook> searchComics(String queryString, ComicSearchRequestBody.SearchType searchType,
+    public List<IComic> searchComics(String queryString, ComicSearchRequestBody.SearchType searchType,
             ComicSearchRequestBody.SortType sortType) {
         // Any search terms should be matched against any of the following fields:
         // series title, principle characters, creator names, description
-        Set<ComicBook> comics = new HashSet<>();
+        Set<IComic> comics = new HashSet<>();
 
         if (searchType == ComicSearchRequestBody.SearchType.EXACT) {
             comics.addAll(comicRepository.findAllBySeriesTitle(queryString));
@@ -253,6 +258,18 @@ public class ComicService {
                 comics.addAll(comicRepository.findAllByCreators(c));
         }
 
-        return comics;
+        if (comics.isEmpty()) {
+            return null;
+        }
+
+        SearchResults comicSorter = new SearchResults(new ArrayList<>(comics));
+
+        if (sortType == ComicSearchRequestBody.SortType.DATE) {
+            comicSorter.setSorter(new SortByPublicationDate());
+        }
+
+        comicSorter.doSort();
+
+        return comicSorter.getSearchResults();
     }
 }

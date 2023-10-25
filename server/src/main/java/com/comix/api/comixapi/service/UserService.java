@@ -124,6 +124,11 @@ public class UserService {
         }
 
         Set<ComicBook> comics = user.getUserComics();
+        for (ComicBook comic : comics) {
+            if (comic.getSlabbed()) {
+
+            }
+        }
 
         Collection collection = new Collection();
 
