@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
@@ -49,6 +51,8 @@ export default function ComicPage({ params }: { params: { id: string } }) {
             throw new Error("CONFLICT");
           case 404:
             throw new Error("NOT FOUND");
+          case 401:
+            throw new Error("UNAUTHORIZED");
           default:
             throw new Error("Error adding comic to collection");
         }
@@ -77,6 +81,14 @@ export default function ComicPage({ params }: { params: { id: string } }) {
             return toast({
               title: "Comic already in personal collection",
               description: "You can only add a comic to your collection once",
+              variant: "destructive",
+            });
+          }
+          if (error.message === "UNAUTHORIZED") {
+            return toast({
+              title: "Unauthorized",
+              description:
+                "You must be logged in to add a comic to your collection",
               variant: "destructive",
             });
           }

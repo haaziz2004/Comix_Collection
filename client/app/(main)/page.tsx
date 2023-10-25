@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -211,13 +212,21 @@ export default function Home() {
                         </div>
                       </CardContent>
                       <CardFooter className="flex items-center justify-center">
-                        <div className="flex items-center">
-                          <div className="mr-2">{"Vol. "}</div>
-                          <div className="mr-2">{comic.volumeNumber + ","}</div>
+                        <div>
+                          <div className="flex items-center">
+                            <div className="mr-2">{"Vol. "}</div>
+                            <div className="mr-2">
+                              {comic.volumeNumber + ","}
+                            </div>
+                          </div>
+                          <div className="flex items-center">
+                            <div className="mr-2">{"Issue "}</div>
+                            <div className="mr-2">{comic.issueNumber}</div>
+                          </div>
                         </div>
-                        <div className="flex items-center">
-                          <div className="mr-2">{"Issue "}</div>
-                          <div className="mr-2">{comic.issueNumber}</div>
+                        <div>
+                          <div className="mr-2">{"Publication Date: "}</div>
+                          <div className="mr-2">{comic.publicationDate}</div>
                         </div>
                       </CardFooter>
                     </Card>
@@ -227,7 +236,7 @@ export default function Home() {
             ) : (
               comics.map((comic) => (
                 <Link href={`/comic/${comic.id}`} key={comic.id}>
-                  <Card>
+                  <Card className="">
                     <CardHeader className="flex items-center justify-center font-bold">
                       {comic.seriesTitle}
                     </CardHeader>
@@ -236,14 +245,20 @@ export default function Home() {
                         {comic.storyTitle ? comic.storyTitle : "No Title"}
                       </div>
                     </CardContent>
-                    <CardFooter className="flex items-center justify-center">
-                      <div className="flex items-center">
-                        <div className="mr-2">{"Vol. "}</div>
-                        <div className="mr-2">{comic.volumeNumber + ","}</div>
+                    <CardFooter className="flex flex-col items-center justify-center">
+                      <div className="flex gap-2">
+                        <div className="flex items-center">
+                          <div className="mr-2">{"Vol. "}</div>
+                          <div className="mr-2">{comic.volumeNumber + ","}</div>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="mr-2">{"Issue "}</div>
+                          <div className="mr-2">{comic.issueNumber}</div>
+                        </div>
                       </div>
                       <div className="flex items-center">
-                        <div className="mr-2">{"Issue "}</div>
-                        <div className="mr-2">{comic.issueNumber}</div>
+                        <div className="mr-2">{"Published: "}</div>
+                        <div className="mr-2">{comic.publicationDate}</div>
                       </div>
                     </CardFooter>
                   </Card>

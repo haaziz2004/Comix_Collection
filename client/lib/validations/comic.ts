@@ -6,7 +6,7 @@ export const comicSchema = z.object({
   volumeNumber: z.string().min(1),
   issueNumber: z.string().min(1),
   publicationDate: z.string().min(1),
-  storyTitle: z.string().min(1).nullable(),
+  storyTitle: z.string().nullable(),
   creators: z
     .array(
       z.object({
@@ -23,7 +23,7 @@ export const comicSchema = z.object({
     )
     .nullable()
     .optional(),
-  description: z.string().min(1).nullable(),
+  description: z.string().nullable(),
   id: z.number().int().positive(),
   value: z.number().nonnegative().nullable(),
   grade: z.number().int().nonnegative().nullable(),

@@ -10,5 +10,9 @@ export const homepageConfig: HomepageConfig = {
       title: "Personal Collection",
       href: "/collection",
     },
+    {
+      title: "Create Comic",
+      href: "/create",
+    },
   ],
 };

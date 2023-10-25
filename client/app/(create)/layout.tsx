@@ -2,13 +2,13 @@ import { MainNav } from "@/components/main-nav";
 import { homepageConfig } from "@/config/homepage";
 import { getCurrentUser } from "@/lib/session";
 
-interface SearchPageLayoutProps {
+interface CreatePageLayoutProps {
   children: React.ReactNode;
 }
 
-export default async function SearchPageLayout({
+export default async function CreatePageLayout({
   children,
-}: SearchPageLayoutProps) {
+}: CreatePageLayoutProps) {
   const user = await getCurrentUser();
 
   return (

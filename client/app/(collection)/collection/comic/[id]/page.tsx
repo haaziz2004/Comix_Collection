@@ -4,10 +4,10 @@ export const dynamic = "force-dynamic";
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { comicEditSchema, comicSchema } from "@/lib/validations/comic";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Label } from "@/components/ui/label";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -77,6 +77,7 @@ export default function CollectionComicpage({
       const comic = comicSchema.parse(await data.json());
 
       return {
+        publisher: comic.publisher,
         seriesTitle: comic.seriesTitle,
         storyTitle: comic.storyTitle,
         volumeNumber: comic.volumeNumber,
@@ -168,6 +169,7 @@ export default function CollectionComicpage({
     setSubmittedData(data);
 
     if (
+      !data.publisher &&
       !data.seriesTitle &&
       !data.storyTitle &&
       !data.volumeNumber &&
@@ -345,6 +347,24 @@ export default function CollectionComicpage({
                   {errors?.issueNumber && (
                     <p className="px-1 text-xs text-red-600">
                       {errors.issueNumber.message}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="publisher">Publisher</Label>
+                  <Input
+                    id="publisher"
+                    placeholder={comic.publisher ?? ""}
+                    type="text"
+                    autoCapitalize="none"
+                    disabled={
+                      removeFromCollcetionMutation.isPending || saveLoading
+                    }
+                    {...register("publisher")}
+                  />
+                  {errors?.publisher && (
+                    <p className="px-1 text-xs text-red-600">
+                      {errors.publisher.message}
                     </p>
                   )}
                 </div>
