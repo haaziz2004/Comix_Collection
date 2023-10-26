@@ -1,9 +1,10 @@
 package com.comix.api.comixapi.controller;
 
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.swing.Icon;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,11 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.comix.api.comixapi.model.comic.ComicBook;
 import com.comix.api.comixapi.model.comic.IComic;
+import com.comix.api.comixapi.model.creator.Creator;
+import com.comix.api.comixapi.repository.ComicRepository;
 import com.comix.api.comixapi.requestbody.ComicAddCreatorRequestBody;
 import com.comix.api.comixapi.requestbody.ComicSearchRequestBody;
 import com.comix.api.comixapi.requestbody.ComicUpdateRequestBody;
-import com.comix.api.comixapi.requestbody.CreateComicRequestBody;
 import com.comix.api.comixapi.service.ComicService;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
 
 @RestController
 @RequestMapping("/comics")
@@ -30,9 +34,11 @@ public class ComicController {
     private static final Logger log = LoggerFactory.getLogger(ComicController.class);
 
     private final ComicService comicService;
+    private final ComicRepository comicRepository;
 
-    public ComicController(ComicService comicService) {
+    public ComicController(ComicService comicService, ComicRepository comicRepository) {
         this.comicService = comicService;
+        this.comicRepository = comicRepository;
     }
 
     @GetMapping("/all")
@@ -62,7 +68,7 @@ public class ComicController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ComicBook> createComic(@RequestBody CreateComicRequestBody body) {
+    public ResponseEntity<ComicBook> createComic(@RequestBody ComicUpdateRequestBody body) {
         log.info("Creating comic with story title: " + body.getStoryTitle());
 
         ComicBook comic = comicService.createComic(body);
@@ -184,7 +190,7 @@ public class ComicController {
 
     @PostMapping("/create/{userId}")
     public ResponseEntity<ComicBook> createComicForUser(@PathVariable Long userId,
-            @RequestBody CreateComicRequestBody body) {
+            @RequestBody ComicUpdateRequestBody body) {
         log.info("Creating comic for user with id: " + userId);
 
         ComicBook comic = comicService.createAndAddComicToUser(userId, body);
@@ -195,5 +201,89 @@ public class ComicController {
         }
 
         return ResponseEntity.ok(comic);
+    }
+
+    @GetMapping("/populate/db")
+    public ResponseEntity<List<ComicBook>> populateDatabase() {
+        Set<ComicBook> comics = comicService.pupulatedb();
+        // Set<ComicBook> comics = new HashSet<>();
+
+        // try {
+        // FileReader fileReader = new FileReader("./src/main/resources/comics.csv");
+        // CSVReader csvReader = new
+        // CSVReaderBuilder(fileReader).withSkipLines(1).build(); // Skip the header
+        // line
+        // String[] line;
+
+        // while ((line = csvReader.readNext()) != null) {
+        // String seriesTitle = line[0];
+        // String volumeNumber = "1";
+        // if (seriesTitle.contains(", Vol.")) {
+        // String[] split = seriesTitle.split(", Vol.");
+        // seriesTitle = split[0].trim();
+        // volumeNumber = split[1].trim();
+        // }
+        // String issueNumber = line[1];
+        // String storyTitle = line[2];
+        // String description = line[3];
+        // String publisher = line[4];
+        // String publicationDate = line[5];
+        // String[] creatorNames = line[8].split("\\|");
+
+        // Set<Creator> creators = new HashSet<>();
+        // for (String creatorName : creatorNames) {
+        // creators.add(new Creator(creatorName.trim()));
+        // }
+
+        // if (seriesTitle.equals("") || volumeNumber.equals("") ||
+        // issueNumber.equals("") || publisher.equals("")
+        // || publicationDate.equals("")) {
+        // continue;
+        // }
+
+        // ComicBook comic = new ComicBook(publisher, seriesTitle, volumeNumber,
+        // issueNumber, publicationDate);
+
+        // if (!creators.isEmpty()) {
+        // comic.setCreators(creators);
+        // }
+
+        // if (!storyTitle.equals("")) {
+        // comic.setStoryTitle(storyTitle);
+        // }
+
+        // if (!description.equals("")) {
+        // comic.setDescription(description);
+        // }
+
+        // comics.add(comic);
+        // }
+
+        // fileReader.close();
+
+        // // Now 'comics' contains the parsed comic book objects with separate
+        // creators.
+        // } catch (Exception e) {
+        // e.printStackTrace();
+        // }
+
+        // log.info("Done parsing CSV file");
+
+        // List<ComicBook> comicList = new ArrayList<>(comics);
+
+        // for (int i = 0; i < comics.size(); i++) {
+        // log.info("Saving " + i);
+        // ComicBook comic = comicList.get(i);
+        // comicRepository.save(comic);
+
+        // if (i % 100 == 0) {
+        // comicRepository.flush();
+        // }
+
+        // }
+
+        log.info("Comics size" + comics.size());
+
+        return ResponseEntity.ok(comics.stream().toList());
     }
 }

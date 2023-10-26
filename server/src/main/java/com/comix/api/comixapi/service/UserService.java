@@ -1,5 +1,6 @@
 package com.comix.api.comixapi.service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -9,6 +10,9 @@ import org.springframework.stereotype.Service;
 import com.comix.api.comixapi.model.collection.Collection;
 import com.comix.api.comixapi.model.collection.CollectionElement;
 import com.comix.api.comixapi.model.comic.ComicBook;
+import com.comix.api.comixapi.model.comic.ComicGradedDecorator;
+import com.comix.api.comixapi.model.comic.ComicSlabbedDecorator;
+import com.comix.api.comixapi.model.comic.IComic;
 import com.comix.api.comixapi.model.user.User;
 import com.comix.api.comixapi.repository.ComicRepository;
 import com.comix.api.comixapi.repository.UserRepository;
@@ -124,15 +128,26 @@ public class UserService {
         }
 
         Set<ComicBook> comics = user.getUserComics();
-        // for (ComicBook comic : comics) {
-        // if (comic.getSlabbed()) {
 
-        // }
-        // }
+        Set<IComic> decoratedComics = new HashSet<>();
+
+        for (IComic comic : comics) {
+            IComic decoratedComic = comic; // Start with the original comic
+
+            if (comic.getSlabbed()) {
+                decoratedComic = new ComicSlabbedDecorator(decoratedComic);
+            }
+
+            if (comic.getGrade() > 0) {
+                decoratedComic = new ComicGradedDecorator(decoratedComic);
+            }
+
+            decoratedComics.add(decoratedComic);
+        }
 
         Collection collection = new Collection();
 
-        for (CollectionElement comic : comics) {
+        for (IComic comic : comics) {
             // Find or create the Publisher level
             Collection publisherLevel = findOrCreatePublisherLevel(collection, comic.getPublisher());
 

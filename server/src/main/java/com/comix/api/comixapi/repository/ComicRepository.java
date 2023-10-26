@@ -12,7 +12,7 @@ import com.comix.api.comixapi.model.creator.Creator;
 import com.comix.api.comixapi.model.character.Character;
 
 @Repository
-public interface ComicRepository extends CrudRepository<ComicBook, Long> {
+public interface ComicRepository extends JpaRepository<ComicBook, Long> {
     List<ComicBook> findAllByUserIdIsNull();
 
     List<ComicBook> findAllByUserId(Long userId);

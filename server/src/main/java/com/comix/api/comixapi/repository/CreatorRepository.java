@@ -2,13 +2,14 @@ package com.comix.api.comixapi.repository;
 
 import java.util.List;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import com.comix.api.comixapi.model.creator.Creator;
 
 @Repository
-public interface CreatorRepository extends CrudRepository<Creator, Long> {
+public interface CreatorRepository extends JpaRepository<Creator, Long> {
     Creator findByName(String name);
 
     List<Creator> findAllByNameContaining(String name);

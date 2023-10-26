@@ -5,6 +5,7 @@ import java.util.Set;
 import com.comix.api.comixapi.model.creator.Creator;
 import com.comix.api.comixapi.model.user.User;
 import com.comix.api.comixapi.model.character.Character;
+import com.comix.api.comixapi.model.collection.CollectionElement;
 
 public abstract class BaseComicDecorator implements IComic {
     private final IComic wrapped;
@@ -73,11 +74,33 @@ public abstract class BaseComicDecorator implements IComic {
         return this.wrapped.getGrade();
     }
 
+    @Override
     public Set<Creator> getCreators() {
         return this.wrapped.getCreators();
     }
 
+    @Override
     public Set<Character> getPrincipleCharacters() {
         return this.wrapped.getPrincipleCharacters();
+    }
+
+    @Override
+    public void addElement(CollectionElement element) {
+        this.wrapped.addElement(element);
+    }
+
+    @Override
+    public void removeElement(CollectionElement element) {
+        this.wrapped.addElement(element);
+    }
+
+    @Override
+    public Set<CollectionElement> getElements() {
+        return this.wrapped.getElements();
+    }
+
+    @Override
+    public int getNumberOfIssues() {
+        return this.wrapped.getNumberOfIssues();
     }
 }

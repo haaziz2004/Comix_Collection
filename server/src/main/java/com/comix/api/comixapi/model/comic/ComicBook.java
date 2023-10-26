@@ -30,7 +30,7 @@ import jakarta.persistence.UniqueConstraint;
                 "issue_number", "publication_date", "user_id" }) })
 public class ComicBook implements IComic, CollectionElement {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @JsonProperty("id")
     private Long id;
 
@@ -294,5 +294,54 @@ public class ComicBook implements IComic, CollectionElement {
     @Override
     public Set<CollectionElement> getElements() {
         return null;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((publisher == null) ? 0 : publisher.hashCode());
+        result = prime * result + ((seriesTitle == null) ? 0 : seriesTitle.hashCode());
+        result = prime * result + ((volumeNumber == null) ? 0 : volumeNumber.hashCode());
+        result = prime * result + ((issueNumber == null) ? 0 : issueNumber.hashCode());
+        result = prime * result + ((publicationDate == null) ? 0 : publicationDate.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ComicBook other = (ComicBook) obj;
+        if (publisher == null) {
+            if (other.publisher != null)
+                return false;
+        } else if (!publisher.equals(other.publisher))
+            return false;
+        if (seriesTitle == null) {
+            if (other.seriesTitle != null)
+                return false;
+        } else if (!seriesTitle.equals(other.seriesTitle))
+            return false;
+        if (volumeNumber == null) {
+            if (other.volumeNumber != null)
+                return false;
+        } else if (!volumeNumber.equals(other.volumeNumber))
+            return false;
+        if (issueNumber == null) {
+            if (other.issueNumber != null)
+                return false;
+        } else if (!issueNumber.equals(other.issueNumber))
+            return false;
+        if (publicationDate == null) {
+            if (other.publicationDate != null)
+                return false;
+        } else if (!publicationDate.equals(other.publicationDate))
+            return false;
+        return true;
     }
 }
