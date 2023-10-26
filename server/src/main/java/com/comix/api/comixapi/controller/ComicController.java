@@ -41,11 +41,11 @@ public class ComicController {
         this.comicRepository = comicRepository;
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<List<IComic>> getAllComics() {
+    @GetMapping("/all/{page}/{size}")
+    public ResponseEntity<List<IComic>> getAllComics(@PathVariable int page, @PathVariable int size) {
         log.info("Getting all comics");
 
-        List<IComic> comics = comicService.getAllComics();
+        List<IComic> comics = comicService.getAllComics(size, page);
 
         if (comics == null || comics.isEmpty()) {
             return ResponseEntity.notFound().build();

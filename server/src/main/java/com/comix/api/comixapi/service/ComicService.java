@@ -13,6 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.comix.api.comixapi.controller.ComicController;
@@ -53,11 +56,12 @@ public class ComicService {
         return comicRepository.findById(comicId).orElse(null);
     }
 
-    public List<IComic> getAllComics() {
-        List<IComic> comics = new ArrayList<>(comicRepository.findAllByUserIdIsNull());
+    public List<IComic> getAllComics(int size, int page) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ComicBook> comicPage = comicRepository.findAllByUserIdIsNull(pageable);
+        List<IComic> comics = new ArrayList<>(comicPage.getContent());
 
         SearchResults comicSorter = new SearchResults(comics);
-
         comicSorter.doSort();
 
         return comicSorter.getSearchResults();
