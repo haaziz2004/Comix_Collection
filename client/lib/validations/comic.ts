@@ -10,7 +10,7 @@ export const comicSchema = z.object({
   creators: z
     .array(
       z.object({
-        name: z.string().min(1),
+        name: z.string(),
       }),
     )
     .nullable()
@@ -18,7 +18,7 @@ export const comicSchema = z.object({
   principleCharacters: z
     .array(
       z.object({
-        name: z.string().min(1),
+        name: z.string(),
       }),
     )
     .nullable()

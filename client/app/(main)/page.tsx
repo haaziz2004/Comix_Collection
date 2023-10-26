@@ -1,5 +1,6 @@
 "use client";
 
+import { api } from "@/components/providers";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -39,13 +40,15 @@ export default function Home() {
   } = useQuery({
     queryKey: ["comics"],
     queryFn: async () => {
-      const data = await fetch("http://localhost:8080/comics/all");
+      const data = await fetch("http://localhost:8080/comics/all/1/50", {
+        method: "GET",
+      });
 
       if (!data.ok) {
         throw new Error("Error fetching comics");
       }
 
-      return comicSchema.array().parse(await data.json());
+      return await data.json();
     },
   });
 
