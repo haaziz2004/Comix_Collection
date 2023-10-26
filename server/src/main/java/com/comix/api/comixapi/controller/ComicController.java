@@ -188,6 +188,30 @@ public class ComicController {
         return ResponseEntity.ok(comics);
     }
 
+    @PostMapping("/search/{userId}")
+    public ResponseEntity<List<IComic>> searchComics(@RequestBody ComicSearchRequestBody body,
+            @PathVariable Long userId) {
+        String queryString = body.getQueryString();
+        ComicSearchRequestBody.SearchType searchType = body.getSearchType();
+        ComicSearchRequestBody.SortType sortType = body.getSortType();
+
+        // if missing any fields then return bad request
+        if (queryString == null || searchType == null || sortType == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        log.info("Searching for comics with query string: " + queryString + " and search type: " + searchType
+                + " and sort type: " + sortType);
+
+        List<IComic> comics = comicService.searchUserComics(queryString, searchType, sortType, userId);
+
+        if (comics == null || comics.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(comics);
+    }
+
     @PostMapping("/create/{userId}")
     public ResponseEntity<ComicBook> createComicForUser(@PathVariable Long userId,
             @RequestBody ComicUpdateRequestBody body) {

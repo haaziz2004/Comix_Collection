@@ -135,7 +135,7 @@ export default function PersonalCollectionPage() {
   const searchMutation = useMutation({
     mutationKey: ["search"],
     mutationFn: async (values: z.infer<typeof formSchema>) => {
-      const data = await fetch("http://localhost:8080/comics/search", {
+      const data = await fetch("/api/user/searchCollection", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -149,6 +149,8 @@ export default function PersonalCollectionPage() {
         }
         throw new Error("Error fetching comics");
       }
+
+      console.log(await data.json());
 
       return comicSchema.array().parse(await data.json());
     },
@@ -288,8 +290,23 @@ export default function PersonalCollectionPage() {
 
   function onEditSubmit(FormData: FormData) {
     setSaveLoading(true);
-    setSubmittedData(FormData);
 
+    if (FormData?.value) {
+      let value = parseFloat(FormData.value);
+      if (FormData.grade) {
+        if (FormData.grade == "1") {
+          value = value * 0.1;
+        } else {
+          value = Math.log10(parseFloat(FormData.grade)) * value;
+        }
+      }
+      if (FormData.slabbed === "true") {
+        value = value * 2;
+      }
+      FormData.value = value.toFixed(2).toString();
+    }
+
+    setSubmittedData(FormData);
     updateComicMutation.mutate(
       {
         ...FormData,

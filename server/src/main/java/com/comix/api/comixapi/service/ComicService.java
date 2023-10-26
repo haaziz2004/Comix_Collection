@@ -368,6 +368,54 @@ public class ComicService {
         return comicSorter.getSearchResults();
     }
 
+    public List<IComic> searchUserComics(String queryString, ComicSearchRequestBody.SearchType searchType,
+            ComicSearchRequestBody.SortType sortType, Long userId) {
+        // Any search terms should be matched against any of the following fields:
+        // series title, principle characters, creator names, description
+        Set<IComic> comics = new HashSet<>();
+
+        if (searchType == ComicSearchRequestBody.SearchType.EXACT) {
+            comics.addAll(comicRepository.findAllBySeriesTitle(queryString));
+            comics.addAll(comicRepository.findAllByDescription(queryString));
+            List<Character> character = characterRepository.findAllByName(queryString);
+            for (Character c : character)
+                comics.addAll(comicRepository.findAllByPrincipleCharacters(c));
+
+            List<Creator> creator = creatorRepository.findAllByName(queryString);
+            for (Creator c : creator)
+                comics.addAll(comicRepository.findAllByCreators(c));
+        } else if (searchType == ComicSearchRequestBody.SearchType.PARTIAL) {
+            comics.addAll(comicRepository.findAllBySeriesTitleContaining(queryString));
+            comics.addAll(comicRepository.findAllByDescriptionContaining(queryString));
+
+            for (Character c : characterRepository.findAllByNameContaining(queryString))
+                comics.addAll(comicRepository.findAllByPrincipleCharacters(c));
+            for (Creator c : creatorRepository.findAllByNameContaining(queryString))
+                comics.addAll(comicRepository.findAllByCreators(c));
+        }
+
+        if (comics.isEmpty()) {
+            return null;
+        }
+
+        List<IComic> userComics = new ArrayList<>();
+        for (IComic comic : comics) {
+            if (comic.getUser().getId() != null && comic.getUser().getId().equals(userId)) {
+                userComics.add(comic);
+            }
+        }
+
+        SearchResults comicSorter = new SearchResults(new ArrayList<>(comics));
+
+        if (sortType == ComicSearchRequestBody.SortType.DATE) {
+            comicSorter.setSorter(new SortByPublicationDate());
+        }
+
+        comicSorter.doSort();
+
+        return comicSorter.getSearchResults();
+    }
+
     public ComicBook createAndAddComicToUser(Long userId, ComicUpdateRequestBody body) {
         User user = userRepository.findById(userId).orElse(null);
 

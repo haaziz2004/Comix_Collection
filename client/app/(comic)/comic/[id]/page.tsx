@@ -139,14 +139,22 @@ export default function ComicPage({ params }: { params: { id: string } }) {
           {comic.creators && comic.creators?.length > 0 && (
             <>
               <div>Creators</div>
-              <div>{comic.creators.join(", ")}</div>
+              <div>
+                {comic.creators
+                  .map((item: { name: string }) => item.name.trim())
+                  .join(", ")}
+              </div>
             </>
           )}
           {comic.principleCharacters &&
             comic.principleCharacters?.length > 0 && (
               <>
                 <div>Principle Characters</div>
-                <div>{comic.principleCharacters.join(", ")}</div>
+                <div>
+                  {comic.principleCharacters
+                    .map((item: { name: string }) => item.name.trim())
+                    .join(", ")}
+                </div>
               </>
             )}
           <div>Publication Date</div>
