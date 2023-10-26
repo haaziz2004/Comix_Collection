@@ -102,7 +102,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex">
+    <div className="flex gap-10">
       <aside className="mt-10 flex h-full w-1/5 items-center justify-center">
         <div className="flex flex-col gap-5">
           <div className="font-heading text-xl">Search</div>

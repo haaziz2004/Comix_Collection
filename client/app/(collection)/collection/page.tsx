@@ -372,7 +372,7 @@ export default function PersonalCollectionPage() {
   }
 
   return (
-    <div className="flex">
+    <div className="flex gap-10">
       <aside className="mt-10 flex h-full w-1/5 items-center justify-center">
         <div className="flex w-full flex-col gap-5">
           <Accordion
