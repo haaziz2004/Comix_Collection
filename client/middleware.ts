@@ -12,7 +12,7 @@ export function middleware(request: NextRequest) {
 
   if (isAuthPage) {
     if (isAuth) {
-      return NextResponse.redirect(new URL("/account/settings", request.url));
+      return NextResponse.redirect(new URL("/", request.url));
     }
 
     return null;

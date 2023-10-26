@@ -45,5 +45,5 @@ export const comicEditSchema = z.object({
   // slabbed: z.coerce.boolean().nullable().optional(),
   value: z.string().nullable().optional(),
   grade: z.string().nullable().optional(),
-  slabbed: z.string().nullable().optional(),
+  slabbed: z.enum(["true", "false", ""]).nullable().optional(),
 });

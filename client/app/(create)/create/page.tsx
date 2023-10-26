@@ -26,26 +26,20 @@ export default function CreatePage() {
   } = useForm<FormData>({
     resolver: zodResolver(comicEditSchema),
     defaultValues: {
-      // creators: "",
-      // description: "",
-      // grade: "",
-      // issueNumber: "",
-      // publicationDate: "",
-      // seriesTitle: "",
-      // slabbed: "",
-      // storyTitle: "",
-      // value: "",
-      // volumeNumber: "",
-      // principleCharacters: "",
-      // publisher: "",
+      creators: "",
+      description: "",
+      grade: "",
+      issueNumber: "",
+      publicationDate: "",
+      seriesTitle: "",
+      slabbed: "",
+      storyTitle: "",
+      value: "",
+      volumeNumber: "",
+      principleCharacters: "",
+      publisher: "",
     },
   });
-
-  useEffect(() => {
-    if (isSubmitSuccessful) {
-      reset();
-    }
-  }, [formState, reset]);
 
   const createComicMutation = useMutation({
     mutationKey: ["createComic"],
@@ -88,6 +82,8 @@ export default function CreatePage() {
       {
         onSuccess: () => {
           setLoading(false);
+          reset();
+
           return toast({
             title: "Comic created",
             description:
@@ -98,7 +94,7 @@ export default function CreatePage() {
         onError: (error) => {
           return toast({
             title: "Error creating comic.",
-            description: "Please try again later",
+            description: "Comic probably already exists.",
             variant: "destructive",
           });
         },
