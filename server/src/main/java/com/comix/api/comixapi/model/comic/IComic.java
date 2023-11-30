@@ -1,14 +1,12 @@
 package com.comix.api.comixapi.model.comic;
 
+import java.sql.Timestamp;
 import java.util.Set;
 
-import com.comix.api.comixapi.model.creator.Creator;
-import com.comix.api.comixapi.model.user.User;
-import com.comix.api.comixapi.model.character.Character;
-import com.comix.api.comixapi.model.collection.CollectionElement;
+import com.comix.api.comixapi.model.creator.ComicCreator;
 
-public interface IComic extends CollectionElement {
-    public double getValue();
+public interface IComic {
+    public Long getId();
 
     public String getPublisher();
 
@@ -18,21 +16,11 @@ public interface IComic extends CollectionElement {
 
     public String getIssueNumber();
 
-    public String getPublicationDate();
-
-    public Set<Creator> getCreators();
-
-    public Set<Character> getPrincipleCharacters();
+    public Timestamp getPublicationDate();
 
     public String getDescription();
 
     public String getStoryTitle();
 
-    public Long getId();
-
-    public Boolean getSlabbed();
-
-    public User getUser();
-
-    public int getGrade();
+    public Set<ComicCreator> getCreators();
 }

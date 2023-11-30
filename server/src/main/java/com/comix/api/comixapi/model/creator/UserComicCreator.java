@@ -3,59 +3,51 @@ package com.comix.api.comixapi.model.creator;
 import java.util.HashSet;
 import java.util.Set;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-
-import com.comix.api.comixapi.model.comic.ComicBook;
+import com.comix.api.comixapi.model.comic.UserComic;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-@Entity(name = "creators")
-public class Creator {
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+public class UserComicCreator {
     private Long id;
 
-    @Column(unique = true)
     private String name;
 
-    @ManyToMany(mappedBy = "creators")
     @JsonBackReference
-    private Set<ComicBook> comics = new HashSet<ComicBook>();
+    private Set<UserComic> userComics = new HashSet<UserComic>();
 
-    protected Creator() {
+    public UserComicCreator() {
     }
 
-    public Creator(String name, Set<ComicBook> comics) {
-        this.name = name;
-        this.comics = comics;
-    }
-
-    public Creator(String name) {
+    public UserComicCreator(String name) {
         this.name = name;
     }
 
-    public Set<ComicBook> getComics() {
-        return comics;
+    public UserComicCreator(String name, Set<UserComic> userComics) {
+        this.name = name;
+        this.userComics = userComics;
     }
 
-    public void setComics(Set<ComicBook> comics) {
-        this.comics = comics;
+    public Long getId() {
+        return id;
     }
 
-    // Getters
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }
 
-    // Setters
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Set<UserComic> getUserComics() {
+        return userComics;
+    }
+
+    public void setUserComics(Set<UserComic> userComics) {
+        this.userComics = userComics;
     }
 
     @Override
@@ -74,7 +66,7 @@ public class Creator {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        Creator other = (Creator) obj;
+        UserComicCreator other = (UserComicCreator) obj;
         if (name == null) {
             if (other.name != null)
                 return false;

@@ -16,8 +16,6 @@ export async function POST(request: NextRequest) {
 
   const requestBody = comicEditSchema.parse(res);
 
-  console.log(requestBody);
-
   const response = await fetch(
     "http://localhost:8080/comics/create/" + userId.value,
     {

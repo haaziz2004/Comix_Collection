@@ -1,16 +1,16 @@
 package com.comix.api.comixapi.model.comic;
 
+import java.sql.Timestamp;
 import java.util.Set;
 
-import com.comix.api.comixapi.model.creator.Creator;
-import com.comix.api.comixapi.model.user.User;
-import com.comix.api.comixapi.model.character.Character;
+import com.comix.api.comixapi.model.character.ComicCharacter;
 import com.comix.api.comixapi.model.collection.CollectionElement;
+import com.comix.api.comixapi.model.creator.ComicCreator;
 
-public abstract class BaseComicDecorator implements IComic {
-    private final IComic wrapped;
+public abstract class BaseComicDecorator implements CollectionElement {
+    private final CollectionElement wrapped;
 
-    BaseComicDecorator(IComic wrapped) {
+    BaseComicDecorator(CollectionElement wrapped) {
         this.wrapped = wrapped;
     }
 
@@ -40,7 +40,7 @@ public abstract class BaseComicDecorator implements IComic {
     }
 
     @Override
-    public String getPublicationDate() {
+    public Timestamp getPublicationDate() {
         return this.wrapped.getPublicationDate();
     }
 
@@ -60,13 +60,13 @@ public abstract class BaseComicDecorator implements IComic {
     }
 
     @Override
-    public Boolean getSlabbed() {
-        return this.wrapped.getSlabbed();
+    public boolean isSlabbed() {
+        return this.wrapped.isSlabbed();
     }
 
     @Override
-    public User getUser() {
-        return this.wrapped.getUser();
+    public Long getUserId() {
+        return this.wrapped.getUserId();
     }
 
     @Override
@@ -75,12 +75,12 @@ public abstract class BaseComicDecorator implements IComic {
     }
 
     @Override
-    public Set<Creator> getCreators() {
+    public Set<ComicCreator> getCreators() {
         return this.wrapped.getCreators();
     }
 
     @Override
-    public Set<Character> getPrincipleCharacters() {
+    public Set<ComicCharacter> getPrincipleCharacters() {
         return this.wrapped.getPrincipleCharacters();
     }
 

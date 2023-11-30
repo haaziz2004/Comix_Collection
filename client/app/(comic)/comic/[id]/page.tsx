@@ -5,96 +5,42 @@ export const dynamic = "force-dynamic";
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
-import { comicSchema } from "@/lib/validations/comic";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { z } from "zod";
-
-const schema = z.object({
-  comicId: z.number().int().positive(),
-});
-
-type ComicId = z.infer<typeof schema>;
+import { api } from "@/trpc/react";
 
 export default function ComicPage({ params }: { params: { id: string } }) {
   const {
     data: comic,
     isLoading,
     isError,
-  } = useQuery({
-    queryKey: ["comic", params.id],
-    queryFn: async () => {
-      const data = await fetch("http://localhost:8080/comics/" + params.id);
-
-      if (!data.ok) {
-        throw new Error("Error fetching comics");
-      }
-
-      return comicSchema.parse(await data.json());
+  } = api.comic.getById.useQuery(
+    { id: parseInt(params.id) },
+    {
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
     },
-  });
+  );
 
-  const addToCollectionMutation = useMutation({
-    mutationKey: ["addToCollection"],
-    mutationFn: async (input: ComicId) => {
-      console.log(input);
-      const data = await fetch("/api/user/addComic", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(input),
-      });
+  const utils = api.useUtils();
 
-      if (!data.ok) {
-        switch (data.status) {
-          case 409:
-            throw new Error("CONFLICT");
-          case 404:
-            throw new Error("NOT FOUND");
-          case 401:
-            throw new Error("UNAUTHORIZED");
-          default:
-            throw new Error("Error adding comic to collection");
-        }
-      }
-
-      const comics = comicSchema.array().parse(await data.json());
-
-      return comics;
-    },
-  });
+  const addComicToPersonalCollectionMutation =
+    api.user.addComicToPersonalCollection.useMutation();
 
   function handleClick() {
-    addToCollectionMutation.mutate(
+    addComicToPersonalCollectionMutation.mutate(
+      { comicId: parseInt(params.id) },
       {
-        comicId: parseInt(params.id),
-      },
-      {
-        onSuccess: () => {
-          return toast({
+        onSuccess() {
+          void utils.user.getPersonalCollection.invalidate();
+          toast({
             title: "Comic added to personal collection",
             variant: "success",
           });
         },
-        onError: (error) => {
-          if (error.message === "CONFLICT") {
-            return toast({
-              title: "Comic already in personal collection",
-              description: "You can only add a comic to your collection once",
-              variant: "destructive",
-            });
-          }
-          if (error.message === "UNAUTHORIZED") {
-            return toast({
-              title: "Unauthorized",
-              description:
-                "You must be logged in to add a comic to your collection",
-              variant: "destructive",
-            });
-          }
-          return toast({
+        onError(error) {
+          toast({
             title: "Error adding comic to personal collection",
-            description: "Please try again later",
+            description: error.message,
             variant: "destructive",
           });
         },
@@ -140,32 +86,25 @@ export default function ComicPage({ params }: { params: { id: string } }) {
             <>
               <div>Creators</div>
               <div>
-                {comic.creators
-                  .map((item: { name: string }) => item.name.trim())
-                  .join(", ")}
+                {comic.creators.map((creator) => creator.name).join(", ")}
               </div>
             </>
           )}
-          {comic.principleCharacters &&
-            comic.principleCharacters?.length > 0 && (
-              <>
-                <div>Principle Characters</div>
-                <div>
-                  {comic.principleCharacters
-                    .map((item: { name: string }) => item.name.trim())
-                    .join(", ")}
-                </div>
-              </>
-            )}
           <div>Publication Date</div>
-          <div>{comic.publicationDate}</div>
+          <div>
+            {comic.publicationDate.toLocaleString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </div>
         </div>
       </div>
       <Button
         onClick={handleClick}
-        disabled={addToCollectionMutation.isPending}
+        disabled={addComicToPersonalCollectionMutation.isLoading}
       >
-        {addToCollectionMutation.isPending && (
+        {addComicToPersonalCollectionMutation.isLoading && (
           <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
         )}
         Add to Personal Collection

@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
   const { id } = await signInResult.json();
 
-  cookies().set("userId", id, {
+  cookies().set("user-id", id, {
     maxAge: 3600,
     expires: new Date(Date.now() + 3600000),
     httpOnly: true,

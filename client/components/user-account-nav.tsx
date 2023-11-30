@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,13 +9,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "@/components/user-avatar";
 
-import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation";
-import { Icons } from "./icons";
-import { type z } from "zod";
-import { type userSchema } from "@/lib/validations/user";
 import { signOut } from "@/lib/session";
+import { type userSchema } from "@/lib/validations/user";
 import { useRouter } from "next/navigation";
+import { type z } from "zod";
 
 type user = z.infer<typeof userSchema>;
 interface UserAccountNavProps {
@@ -25,7 +20,6 @@ interface UserAccountNavProps {
 }
 
 export function UserAccountNav({ user }: UserAccountNavProps) {
-  const path = usePathname();
   const router = useRouter();
 
   return (
@@ -51,8 +45,13 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
             // void signOut({
             //   callbackUrl: `${window.location.origin}/login`,
             // });
-            void signOut();
-            router.push("/login");
+            signOut()
+              .then(() => {
+                router.push("/login");
+              })
+              .catch((error) => {
+                console.error(error);
+              });
           }}
         >
           Sign out

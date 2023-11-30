@@ -1,8 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-misused-promises */
 "use client";
 // export const dynamic = "force-dynamic";
 
@@ -41,6 +36,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { api } from "@/trpc/react";
+import { Search } from "@/components/search";
 
 const formSchema = z.object({
   queryString: z.string().min(1),
@@ -97,29 +94,11 @@ export default function PersonalCollectionPage() {
     switchLevel("issues");
   };
 
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["userComics"],
-    queryFn: async () => {
-      const data = await fetch("api/user/getComics", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // cache: "no-cache",
-      });
-
-      if (!data.ok) {
-        throw new Error("Error fetching comics");
-      }
-
-      const json = await data.json();
-
-      setNumberOfIssues(json.numberOfIssues);
-      setValue(json.value);
-
-      return json;
-    },
-  });
+  const { data, isLoading, isError, refetch } =
+    api.user.getPersonalCollection.useQuery(undefined, {
+      staleTime: Infinity,
+      refetchOnReconnect: false,
+    });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -132,29 +111,29 @@ export default function PersonalCollectionPage() {
     reValidateMode: "onSubmit",
   });
 
-  const searchMutation = useMutation({
-    mutationKey: ["search"],
-    mutationFn: async (values: z.infer<typeof formSchema>) => {
-      const data = await fetch("/api/user/searchCollection", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      });
+  const searchMutation = api.userComic.search.useMutation();
 
-      if (!data.ok) {
-        if (data.status === 404) {
-          return [];
-        }
-        throw new Error("Error fetching comics");
-      }
+  // useMutation({
+  //   mutationKey: ["search"],
+  //   mutationFn: async (values: z.infer<typeof formSchema>) => {
+  //     const data = await fetch("/api/user/searchCollection", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(values),
+  //     });
 
-      console.log(await data.json());
+  //     if (!data.ok) {
+  //       if (data.status === 404) {
+  //         return [];
+  //       }
+  //       throw new Error("Error fetching comics");
+  //     }
 
-      return comicSchema.array().parse(await data.json());
-    },
-  });
+  //     return comicSchema.array().parse(await data.json());
+  //   },
+  // });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     searchMutation.mutate(values);
@@ -181,34 +160,38 @@ export default function PersonalCollectionPage() {
   useEffect(() => {
     // Define a function to determine if there is data at the current level
     const hasDataAtCurrentLevel = () => {
+      if (!data) return false;
       if (currentLevel === "publishers") {
         return data.elements && data.elements.length > 0;
       }
       if (currentLevel === "series") {
         return (
           data.elements &&
-          data.elements.find(
+          (data.elements.find(
             (publisher) => publisher.publisher === selectedPublisher,
-          )?.elements.length > 0
+          )?.elements.length ??
+            0 > 0)
         );
       }
       if (currentLevel === "volumes") {
         return (
           data.elements &&
-          data.elements
+          (data.elements
             .find((publisher) => publisher.publisher === selectedPublisher)
             ?.elements.find((series) => series.seriesTitle === selectedSeries)
-            ?.elements.length > 0
+            ?.elements.length ??
+            0 > 0)
         );
       }
       if (currentLevel === "issues") {
         return (
           data.elements &&
-          data.elements
+          (data.elements
             .find((publisher) => publisher.publisher === selectedPublisher)
             ?.elements.find((series) => series.seriesTitle === selectedSeries)
             ?.elements.find((volume) => volume.volumeNumber === selectedVolume)
-            ?.elements.length > 0
+            ?.elements.length ??
+            0 > 0)
         );
       }
       return false;
@@ -227,34 +210,8 @@ export default function PersonalCollectionPage() {
     }
   }, [data, currentLevel, selectedPublisher, selectedSeries, selectedVolume]);
 
-  const removeFromCollcetionMutation = useMutation({
-    mutationKey: ["removeFromCollection"],
-    mutationFn: async (input: ComicId) => {
-      const data = await fetch("/api/user/removeComic", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(input),
-        cache: "no-store",
-      });
-
-      if (!data.ok) {
-        switch (data.status) {
-          case 409:
-            throw new Error("CONFLICT");
-          case 404:
-            throw new Error("NOT FOUND");
-          default:
-            throw new Error("Error adding comic to collection");
-        }
-      }
-
-      const comics = comicSchema.array().parse(await data.json());
-
-      return comics;
-    },
-  });
+  const removeComicFromPersonalCollectionMutation =
+    api.user.removeComicFromPersonalCollection.useMutation();
 
   const updateComicMutation = useMutation({
     mutationKey: ["updateComic"],
@@ -300,7 +257,7 @@ export default function PersonalCollectionPage() {
           value = Math.log10(parseFloat(FormData.grade)) * value;
         }
       }
-      if (FormData.slabbed === "true") {
+      if (FormData.slabbed === true) {
         value = value * 2;
       }
       FormData.value = value.toFixed(2).toString();
@@ -314,7 +271,7 @@ export default function PersonalCollectionPage() {
       {
         onSuccess: () => {
           setEditing(false);
-          refetch();
+          void refetch();
           return toast({
             title: "Comic updated",
             description: "Comic successfully updated",
@@ -344,13 +301,13 @@ export default function PersonalCollectionPage() {
   }
 
   function handleClick(comidId: number) {
-    removeFromCollcetionMutation.mutate(
+    removeComicFromPersonalCollectionMutation.mutate(
       {
         comicId: comidId,
       },
       {
         onSuccess: () => {
-          refetch();
+          void refetch();
           return toast({
             title: "Comic removed from personal collection",
             description: "Comic successfully removed from personal collection",
@@ -392,6 +349,8 @@ export default function PersonalCollectionPage() {
     <div className="flex gap-10">
       <aside className="mt-10 flex h-full w-1/5 items-center justify-center">
         <div className="flex w-full flex-col gap-5">
+          <Search searchMutation={searchMutation} />
+
           <Accordion
             className="w-full"
             type="single"
@@ -402,100 +361,7 @@ export default function PersonalCollectionPage() {
               <AccordionTrigger className="font-heading text-xl">
                 Search
               </AccordionTrigger>
-              <AccordionContent>
-                <div className="flex flex-col gap-5">
-                  <Form {...form}>
-                    <form
-                      onSubmit={form.handleSubmit(onSubmit)}
-                      className="space-y-8"
-                    >
-                      <FormField
-                        control={form.control}
-                        name="queryString"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Search Term</FormLabel>
-                            <FormControl>
-                              <Input placeholder="search" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="searchType"
-                        render={({ field }) => (
-                          <FormItem className="space-y-3">
-                            <FormLabel>Search Type</FormLabel>
-                            <FormControl>
-                              <RadioGroup
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                                className="flex flex-col space-y-1"
-                              >
-                                <FormItem className="flex items-center space-x-3 space-y-0">
-                                  <FormControl>
-                                    <RadioGroupItem value="PARTIAL" />
-                                  </FormControl>
-                                  <FormLabel className="font-normal">
-                                    Partial Matching
-                                  </FormLabel>
-                                </FormItem>
-                                <FormItem className="flex items-center space-x-3 space-y-0">
-                                  <FormControl>
-                                    <RadioGroupItem value="EXACT" />
-                                  </FormControl>
-                                  <FormLabel className="font-normal">
-                                    Exact Matching
-                                  </FormLabel>
-                                </FormItem>
-                              </RadioGroup>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="sortType"
-                        render={({ field }) => (
-                          <FormItem className="space-y-3">
-                            <FormLabel>Sort Type</FormLabel>
-                            <FormControl>
-                              <RadioGroup
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                                className="flex flex-col space-y-1"
-                              >
-                                <FormItem className="flex items-center space-x-3 space-y-0">
-                                  <FormControl>
-                                    <RadioGroupItem value="ALPHABETICAL" />
-                                  </FormControl>
-                                  <FormLabel className="font-normal">
-                                    Alphabetical
-                                  </FormLabel>
-                                </FormItem>
-                                <FormItem className="flex items-center space-x-3 space-y-0">
-                                  <FormControl>
-                                    <RadioGroupItem value="DATE" />
-                                  </FormControl>
-                                  <FormLabel className="font-normal">
-                                    Date
-                                  </FormLabel>
-                                </FormItem>
-                              </RadioGroup>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button type="submit">Submit</Button>
-                    </form>
-                  </Form>
-                  <Button onClick={() => searchMutation.reset()}>Reset</Button>
-                </div>
-              </AccordionContent>
+              <AccordionContent></AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-2">
               <AccordionTrigger className="font-heading text-xl">
@@ -548,7 +414,9 @@ export default function PersonalCollectionPage() {
                         </div>
                         <div>
                           <div className="mr-2">{"Publication Date: "}</div>
-                          <div className="mr-2">{comic.publicationDate}</div>
+                          <div className="mr-2">
+                            {comic.publicationDate.toISOString()}
+                          </div>
                         </div>
                       </CardFooter>
                     </Card>
@@ -556,7 +424,7 @@ export default function PersonalCollectionPage() {
                 ))}
               </div>
             )
-          ) : data.elements.length === 0 ? (
+          ) : !data.elements ? (
             <div className="flex flex-col items-center justify-center gap-5">
               <div className="text-center">
                 No comics in personal collection
@@ -655,8 +523,10 @@ export default function PersonalCollectionPage() {
                         const publisherCollection = data.elements.find(
                           (item) => item.publisher === selectedPublisher,
                         );
-                        setNumberOfIssues(publisherCollection.numberOfIssues);
-                        setValue(publisherCollection.value);
+                        setNumberOfIssues(
+                          publisherCollection?.numberOfIssues ?? 0,
+                        );
+                        setValue(publisherCollection?.value ?? 0);
                       }}
                     >
                       Back
@@ -710,8 +580,10 @@ export default function PersonalCollectionPage() {
                           ?.elements.find(
                             (item) => item.seriesTitle === selectedSeries,
                           );
-                        setNumberOfIssues(seriesCollection.numberOfIssues);
-                        setValue(seriesCollection.value);
+                        setNumberOfIssues(
+                          seriesCollection?.numberOfIssues ?? 0,
+                        );
+                        setValue(seriesCollection?.value ?? 0);
                       }}
                     >
                       Back
@@ -720,22 +592,21 @@ export default function PersonalCollectionPage() {
                   <ul className="grid grid-cols-2 gap-5">
                     {data.elements
                       .find(
-                        (publisher: { publisher: string | null }) =>
+                        (publisher) =>
                           publisher.publisher === selectedPublisher,
                       )
                       ?.elements.find(
-                        (series: { seriesTitle: string | null }) =>
-                          series.seriesTitle === selectedSeries,
+                        (series) => series.seriesTitle === selectedSeries,
                       )
-                      ?.elements.map((issue: { elements: any[] }) =>
+                      ?.elements.map((issue) =>
                         issue.elements.map((comic) => (
                           <>
                             <li
-                              key={comic.elements[0].id}
+                              key={comic.elements[0]?.id}
                               className="flex flex-col items-center justify-center gap-4"
                             >
                               {editing &&
-                              selectedIssueId === comic.elements[0].id ? (
+                              selectedIssueId === comic.elements[0]?.id ? (
                                 <form onSubmit={handleSubmit(onEditSubmit)}>
                                   <div className="flex flex-col items-center justify-center gap-10">
                                     <div className="grid grid-cols-2 flex-col items-center justify-center gap-6">
@@ -751,7 +622,7 @@ export default function PersonalCollectionPage() {
                                           type="text"
                                           autoCapitalize="none"
                                           disabled={
-                                            removeFromCollcetionMutation.isPending ||
+                                            removeComicFromPersonalCollectionMutation.isLoading ||
                                             saveLoading
                                           }
                                           {...register("seriesTitle")}
@@ -772,7 +643,7 @@ export default function PersonalCollectionPage() {
                                           type="text"
                                           autoCapitalize="none"
                                           disabled={
-                                            removeFromCollcetionMutation.isPending ||
+                                            removeComicFromPersonalCollectionMutation.isLoading ||
                                             saveLoading
                                           }
                                           {...register("storyTitle")}
@@ -795,7 +666,7 @@ export default function PersonalCollectionPage() {
                                           type="text"
                                           autoCapitalize="none"
                                           disabled={
-                                            removeFromCollcetionMutation.isPending ||
+                                            removeComicFromPersonalCollectionMutation.isLoading ||
                                             saveLoading
                                           }
                                           {...register("volumeNumber")}
@@ -818,7 +689,7 @@ export default function PersonalCollectionPage() {
                                           type="text"
                                           autoCapitalize="none"
                                           disabled={
-                                            removeFromCollcetionMutation.isPending ||
+                                            removeComicFromPersonalCollectionMutation.isLoading ||
                                             saveLoading
                                           }
                                           {...register("issueNumber")}
@@ -841,7 +712,7 @@ export default function PersonalCollectionPage() {
                                           type="text"
                                           autoCapitalize="none"
                                           disabled={
-                                            removeFromCollcetionMutation.isPending ||
+                                            removeComicFromPersonalCollectionMutation.isLoading ||
                                             saveLoading
                                           }
                                           {...register("publisher")}
@@ -864,7 +735,7 @@ export default function PersonalCollectionPage() {
                                           type="text"
                                           autoCapitalize="none"
                                           disabled={
-                                            removeFromCollcetionMutation.isPending ||
+                                            removeComicFromPersonalCollectionMutation.isLoading ||
                                             saveLoading
                                           }
                                           {...register("description")}
@@ -898,7 +769,7 @@ export default function PersonalCollectionPage() {
                                           type="text"
                                           autoCapitalize="none"
                                           disabled={
-                                            removeFromCollcetionMutation.isPending ||
+                                            removeComicFromPersonalCollectionMutation.isLoading ||
                                             saveLoading
                                           }
                                           {...register("creators")}
@@ -934,7 +805,7 @@ export default function PersonalCollectionPage() {
                                           type="text"
                                           autoCapitalize="none"
                                           disabled={
-                                            removeFromCollcetionMutation.isPending ||
+                                            removeComicFromPersonalCollectionMutation.isLoading ||
                                             saveLoading
                                           }
                                           {...register("principleCharacters")}
@@ -957,7 +828,7 @@ export default function PersonalCollectionPage() {
                                           type="text"
                                           autoCapitalize="none"
                                           disabled={
-                                            removeFromCollcetionMutation.isPending ||
+                                            removeComicFromPersonalCollectionMutation.isLoading ||
                                             saveLoading
                                           }
                                           {...register("publicationDate")}
@@ -979,7 +850,7 @@ export default function PersonalCollectionPage() {
                                           type="text"
                                           autoCapitalize="none"
                                           disabled={
-                                            removeFromCollcetionMutation.isPending ||
+                                            removeComicFromPersonalCollectionMutation.isLoading ||
                                             saveLoading
                                           }
                                           {...register("value")}
@@ -1001,7 +872,7 @@ export default function PersonalCollectionPage() {
                                           type="text"
                                           autoCapitalize="none"
                                           disabled={
-                                            removeFromCollcetionMutation.isPending ||
+                                            removeComicFromPersonalCollectionMutation.isLoading ||
                                             saveLoading
                                           }
                                           {...register("grade")}
@@ -1023,7 +894,7 @@ export default function PersonalCollectionPage() {
                                           type="text"
                                           autoCapitalize="none"
                                           disabled={
-                                            removeFromCollcetionMutation.isPending ||
+                                            removeComicFromPersonalCollectionMutation.isLoading ||
                                             saveLoading
                                           }
                                           {...register("slabbed")}
@@ -1041,7 +912,7 @@ export default function PersonalCollectionPage() {
                                           setEditing((editing) => !editing);
                                         }}
                                         disabled={
-                                          removeFromCollcetionMutation.isPending ||
+                                          removeComicFromPersonalCollectionMutation.isLoading ||
                                           saveLoading
                                         }
                                       >
@@ -1050,12 +921,12 @@ export default function PersonalCollectionPage() {
 
                                       <Button
                                         disabled={
-                                          removeFromCollcetionMutation.isPending ||
+                                          removeComicFromPersonalCollectionMutation.isLoading ||
                                           saveLoading
                                         }
                                         type="submit"
                                       >
-                                        {(removeFromCollcetionMutation.isPending ||
+                                        {(removeComicFromPersonalCollectionMutation.isLoading ||
                                           saveLoading) && (
                                           <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
                                         )}
@@ -1068,8 +939,8 @@ export default function PersonalCollectionPage() {
                                 <div className="flex flex-col items-center justify-center gap-10">
                                   <div className="grid grid-cols-2 flex-col items-center justify-center gap-4">
                                     <div>Series Title</div>
-                                    <div>{comic.elements[0].seriesTitle}</div>
-                                    {comic.elements[0].storyTitle && (
+                                    <div>{comic.elements[0]?.seriesTitle}</div>
+                                    {comic.elements[0]?.storyTitle && (
                                       <>
                                         <div>Story Title</div>
                                         <div>
@@ -1078,10 +949,10 @@ export default function PersonalCollectionPage() {
                                       </>
                                     )}
                                     <div>Volume Number</div>
-                                    <div>{comic.elements[0].volumeNumber}</div>
+                                    <div>{comic.elements[0]?.volumeNumber}</div>
                                     <div>Issue Number</div>
-                                    <div>{comic.elements[0].issueNumber}</div>
-                                    {comic.elements[0].description && (
+                                    <div>{comic.elements[0]?.issueNumber}</div>
+                                    {comic.elements[0]?.description && (
                                       <>
                                         <div>Description</div>
                                         <div>
@@ -1089,7 +960,7 @@ export default function PersonalCollectionPage() {
                                         </div>
                                       </>
                                     )}
-                                    {comic.elements[0].creators &&
+                                    {comic.elements[0]?.creators &&
                                       comic.elements[0].creators.length > 0 && (
                                         <>
                                           <div>Creators</div>
@@ -1102,7 +973,7 @@ export default function PersonalCollectionPage() {
                                           </div>
                                         </>
                                       )}
-                                    {comic.elements[0].principleCharacters &&
+                                    {comic.elements[0]?.principleCharacters &&
                                       comic.elements[0].principleCharacters
                                         .length > 0 && (
                                         <>
@@ -1118,27 +989,27 @@ export default function PersonalCollectionPage() {
                                       )}
                                     <div>Publication Date</div>
                                     <div>
-                                      {comic.elements[0].publicationDate}
+                                      {comic.elements[0]?.publicationDate}
                                     </div>
-                                    {comic.elements[0].value !== 0 && (
+                                    {comic.elements[0]?.value !== 0 && (
                                       <>
                                         <div>Value</div>
                                         <div>
-                                          {comic.elements[0].value?.toString()}
+                                          {comic.elements[0]?.value.toString()}
                                         </div>
                                       </>
                                     )}
-                                    {comic.elements[0].grade !== 0 && (
+                                    {comic.elements[0]?.grade !== 0 && (
                                       <>
                                         <div>Grade</div>
                                         <div>
-                                          {comic.elements[0].grade?.toString()}
+                                          {comic.elements[0]?.grade.toString()}
                                         </div>
                                       </>
                                     )}
                                     <div>Slabbed</div>
                                     <div>
-                                      {comic.elements[0].slabbed?.toString() ??
+                                      {comic.elements[0]?.slabbed.toString() ??
                                         "slabbed"}
                                     </div>
                                   </div>
@@ -1150,7 +1021,9 @@ export default function PersonalCollectionPage() {
                                 <div className="flex flex-col items-center justify-center gap-5">
                                   <Button
                                     onClick={() => {
-                                      setSelectedIssueId(comic.elements[0].id);
+                                      setSelectedIssueId(
+                                        comic.elements[0]?.id ?? 0,
+                                      );
                                       reset({
                                         publisher: comic.elements[0]?.publisher,
                                         seriesTitle:
@@ -1183,8 +1056,7 @@ export default function PersonalCollectionPage() {
                                           comic.elements[0]?.grade?.toString() ??
                                           "",
                                         slabbed:
-                                          comic.elements[0]?.slabbed?.toString() ??
-                                          "",
+                                          comic.elements[0]?.slabbed ?? false,
                                       });
                                       setEditing((editing) => !editing);
                                     }}
@@ -1194,14 +1066,14 @@ export default function PersonalCollectionPage() {
                                   <Button
                                     variant={"destructive"}
                                     onClick={() =>
-                                      handleClick(comic.elements[0].id)
+                                      handleClick(comic.elements[0]?.id ?? 0)
                                     }
                                     disabled={
-                                      removeFromCollcetionMutation.isPending ||
+                                      removeComicFromPersonalCollectionMutation.isLoading ||
                                       saveLoading
                                     }
                                   >
-                                    {removeFromCollcetionMutation.isPending && (
+                                    {removeComicFromPersonalCollectionMutation.isLoading && (
                                       <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
                                     )}
                                     Remove from Personal Collection

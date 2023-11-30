@@ -1,7 +1,9 @@
 package com.comix.api.comixapi.model.comic;
 
+import com.comix.api.comixapi.model.collection.CollectionElement;
+
 public class ComicGradedDecorator extends BaseComicDecorator {
-    public ComicGradedDecorator(IComic wrapped) {
+    public ComicGradedDecorator(CollectionElement wrapped) {
         super(wrapped);
     }
 

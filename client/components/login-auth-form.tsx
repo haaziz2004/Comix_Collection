@@ -2,23 +2,26 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import * as React from "react";
 import { useForm } from "react-hook-form";
+import { useState } from "react";
 import type * as z from "zod";
 
 import { Icons } from "@/components/icons";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { userAuthSchema } from "@/lib/validations/auth";
+import { api } from "@/trpc/react";
 
 type LoginAuthFormProps = React.HTMLAttributes<HTMLDivElement>;
 
 type FormData = z.infer<typeof userAuthSchema>;
 
 export function LoginAuthForm({ className, ...props }: LoginAuthFormProps) {
+  const { toast } = useToast();
+
   const {
     register,
     handleSubmit,
@@ -26,53 +29,38 @@ export function LoginAuthForm({ className, ...props }: LoginAuthFormProps) {
   } = useForm<FormData>({
     resolver: zodResolver(userAuthSchema),
   });
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
 
-  async function onSubmit(data: FormData) {
+  const loginMutation = api.auth.login.useMutation({
+    onSuccess() {
+      toast({
+        title: "Logged in successfully!",
+        description: "Welcome back!",
+        variant: "success",
+      });
+      router.push("/");
+      router.refresh();
+    },
+    onError(error) {
+      toast({
+        title: "Error logging in!",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      setIsLoading(false);
+    },
+  });
+
+  function onSubmit(data: FormData) {
     setIsLoading(true);
-
-    const signInResult = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    setIsLoading(false);
-
-    if (!signInResult?.ok) {
-      switch (signInResult.status) {
-        case 401:
-          return toast({
-            title: "Incorrect username or password.",
-            description: "Please try again.",
-            variant: "destructive",
-          });
-        case 500:
-          return toast({
-            title: "Something went wrong.",
-            description: "Your sign in request failed. Please try again.",
-            variant: "destructive",
-          });
-      }
-    }
-
-    toast({
-      title: "Sign in successful.",
-      description: "Welcome back!",
-      variant: "success",
-    });
-
-    // redirect to home page
-    router.refresh();
-    return router.push("/");
+    loginMutation.mutate(data);
   }
 
   return (
     <div className={cn("grid gap-6", className)} {...props}>
-      {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="grid gap-2">
           <div className="grid gap-2">

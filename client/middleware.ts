@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   const isAuthPage = path.startsWith("/login") || path.startsWith("/register");
-  const isAuth = request.cookies.get("userId") !== undefined;
+  const isAuth = request.cookies.get("user-id") !== undefined;
 
   if (isAuthPage) {
     if (isAuth) {

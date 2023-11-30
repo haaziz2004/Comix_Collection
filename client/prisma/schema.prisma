@@ -9,93 +9,128 @@ datasource db {
 }
 
 model User {
-  id       BigInt      @id
-  password String?     @db.VarChar(255)
-  role     users_role?
-  username String?     @unique(map: "UK_r43af9ap4edm43mmtq01oddj6") @db.VarChar(32)
+  id        Int         @id @default(autoincrement())
+  username  String      @unique
+  password  String
+  role      Role        @default(USER)
+  UserComic UserComic[]
 
   @@map("users")
 }
 
-model Comic {
-  id                  BigInt      @id
-  description         String?     @db.VarChar(255)
-  grade               Int?
-  issue_number        String?     @db.VarChar(10)
-  publication_date    String?     @db.VarChar(20)
-  publisher           String?     @db.VarChar(40)
-  series_title        String?     @db.VarChar(255)
-  slabbed             Boolean?    @db.Bit(1)
-  story_title         String?     @db.VarChar(255)
-  value               Float?
-  volume_number       String?     @db.VarChar(40)
-  user_id             BigInt?
-  creators            Creator[]
-  principleCharacters Character[]
+enum Role {
+  USER
+  ADMIN
+}
 
-  @@unique([publisher, series_title, volume_number, issue_number, publication_date, user_id], map: "UniquePublisherSeriesTitleVolumeNumberIssueNumberPublicationDate")
+model Comic {
+  id                  Int              @id @default(autoincrement())
+  publisher           String           @db.VarChar(40)
+  seriesTitle         String           @db.VarChar(255)
+  volumeNumber        String           @db.VarChar(10)
+  issueNumber         String           @db.VarChar(10)
+  publicationDate     DateTime
+  creators            ComicCreator[]
+  principalCharacters ComicCharacter[]
+  storyTitle          String?
+  description         String?
+
+  @@unique([publisher, seriesTitle, volumeNumber, issueNumber, publicationDate])
   @@map("comics")
 }
 
+model UserComic {
+  id                  Int                  @id @default(autoincrement())
+  publisher           String               @db.VarChar(40)
+  seriesTitle         String               @db.VarChar(255)
+  volumeNumber        String               @db.VarChar(10)
+  issueNumber         String               @db.VarChar(10)
+  publicationDate     DateTime
+  creators            UserComicCreator[]
+  principalCharacters UserComicCharacter[]
+  storyTitle          String?
+  description         String?
+
+  value   Float   @default(0)
+  grade   Int     @default(0)
+  slabbed Boolean @default(false)
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  @@unique([publisher, seriesTitle, volumeNumber, issueNumber, publicationDate, userId])
+  @@index([userId])
+  @@map("user_comics")
+}
+
 model Creator {
-  id     BigInt  @id
-  name   String? @unique(map: "UK_hojjolhfbm9gth0c5l1qng9fy") @db.VarChar(255)
-  comics Comic[]
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  comics     ComicCreator[]
+  userComics UserComicCreator[]
 
   @@map("creators")
 }
 
-model Character {
-  id     BigInt  @id
-  name   String? @unique(map: "UK_r3m7dafrtn7gkievcf8fw7nt5") @db.VarChar(255)
-  comics Comic[]
+model ComicCreator {
+  creator   Creator @relation(fields: [creatorId], references: [id])
+  creatorId Int
 
-  @@map("characters")
+  comic   Comic @relation(fields: [comicId], references: [id])
+  comicId Int
+
+  @@id([comicId, creatorId])
+  @@index([comicId])
+  @@index([creatorId])
+  @@map("comic_creators")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model characters_seq {
-  next_val BigInt?
+model UserComicCreator {
+  creator   Creator @relation(fields: [creatorId], references: [id])
+  creatorId Int
 
-  @@ignore
+  userComic   UserComic @relation(fields: [userComicId], references: [id])
+  userComicId Int
+
+  @@id([userComicId, creatorId])
+  @@index([userComicId])
+  @@index([creatorId])
+  @@map("usercomic_creators")
 }
 
-model comic_characters {
-  comic_id     BigInt
-  character_id BigInt
+model PrincipalCharacter {
+  id   Int    @id @default(autoincrement())
+  name String @unique
 
-  @@id([comic_id, character_id])
+  comics     ComicCharacter[]
+  userComics UserComicCharacter[]
+
+  @@map("principal_characters")
 }
 
-model comic_creators {
-  comic_id   BigInt
-  creator_id BigInt
+model ComicCharacter {
+  character   PrincipalCharacter @relation(fields: [characterId], references: [id])
+  characterId Int
 
-  @@id([comic_id, creator_id])
+  comic   Comic @relation(fields: [comicId], references: [id])
+  comicId Int
+
+  @@id([comicId, characterId])
+  @@index([comicId])
+  @@index([characterId])
+  @@map("comic_characters")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model comics_seq {
-  next_val BigInt?
+model UserComicCharacter {
+  character   PrincipalCharacter @relation(fields: [characterId], references: [id])
+  characterId Int
 
-  @@ignore
-}
+  userComic   UserComic @relation(fields: [userComicId], references: [id])
+  userComicId Int
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model creators_seq {
-  next_val BigInt?
-
-  @@ignore
-}
-
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model users_seq {
-  next_val BigInt?
-
-  @@ignore
-}
-
-enum users_role {
-  ADMIN
-  USER
+  @@id([userComicId, characterId])
+  @@index([userComicId])
+  @@index([characterId])
+  @@map("usercomic_characters")
 }

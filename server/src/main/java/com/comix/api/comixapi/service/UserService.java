@@ -7,147 +7,82 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.comix.api.comixapi.dao.user.UserDAO;
+import com.comix.api.comixapi.dao.usercomic.UserComicDAO;
+import com.comix.api.comixapi.exceptions.ConflictException;
+import com.comix.api.comixapi.exceptions.UserNotFoundException;
 import com.comix.api.comixapi.model.collection.Collection;
 import com.comix.api.comixapi.model.collection.CollectionElement;
-import com.comix.api.comixapi.model.comic.ComicBook;
 import com.comix.api.comixapi.model.comic.ComicGradedDecorator;
 import com.comix.api.comixapi.model.comic.ComicSlabbedDecorator;
-import com.comix.api.comixapi.model.comic.IComic;
+import com.comix.api.comixapi.model.comic.UserComic;
 import com.comix.api.comixapi.model.user.User;
-import com.comix.api.comixapi.repository.ComicRepository;
-import com.comix.api.comixapi.repository.UserRepository;
 
 @Service
 public class UserService {
     @Autowired
-    private UserRepository userRepository;
+    private UserDAO userDAO;
     @Autowired
-    private ComicRepository comicRepository;
+    private UserComicDAO userComicDAO;
 
-    public User createUser(String username, String password) {
-        // check if user already exists
-        if (userRepository.findByUsername(username) != null) {
-            return null;
+    public User getById(Long id) {
+        User user = userDAO.getById(id);
+
+        if (user == null) {
+            throw new UserNotFoundException(id);
         }
-
-        User user = new User(username, password);
-
-        // Save the User entity to the database
-        userRepository.save(user);
 
         return user;
-    }
-
-    public List<ComicBook> getAllUserComics(Long userId) {
-        List<ComicBook> comics = comicRepository.findAllByUserId(userId);
-
-        if (comics == null) {
-            throw new IllegalArgumentException("User does not exist");
-        }
-
-        return comics;
-    }
-
-    public List<ComicBook> addComicToUser(Long userId, Long comicId) {
-        User user = userRepository.findById(userId).orElse(null);
-        ComicBook comic = comicRepository.findById(comicId).orElse(null);
-
-        if (user == null || comic == null) {
-            throw new IllegalArgumentException("User or comic does not exist");
-        }
-
-        // check if comic is already in user's collection
-        // only check "publisher", "series_title", "volume_number", "issue_number",
-        // "publication_date"
-        Set<ComicBook> comics = user.getUserComics();
-        for (ComicBook c : comics) {
-            if (c.getPublisher().equals(comic.getPublisher()) && c.getSeriesTitle().equals(comic.getSeriesTitle())
-                    && c.getVolumeNumber().equals(comic.getVolumeNumber())
-                    && c.getIssueNumber().equals(comic.getIssueNumber())
-                    && c.getPublicationDate().equals(comic.getPublicationDate())) {
-                // comic already exists in user's collection
-                throw new IllegalArgumentException("Comic already exists in user's collection");
-            }
-        }
-
-        // create a new comic with identical fields except also initialize the user,
-        // slabbed, grade, and value fields
-        ComicBook userComic = new ComicBook(comic.getPublisher(), comic.getSeriesTitle(), comic.getVolumeNumber(),
-                comic.getIssueNumber(), comic.getPublicationDate(), user, 0, 0, false);
-
-        // add to comic repository
-        comicRepository.save(userComic);
-        user.addComic(userComic);
-        userRepository.save(user);
-
-        return user.getUserComics().stream().toList();
-    }
-
-    public List<ComicBook> removeComicFromUser(Long userId, Long comicId) {
-        User user = userRepository.findById(userId).orElse(null);
-        ComicBook comic = comicRepository.findById(comicId).orElse(null);
-
-        if (user == null || comic == null) {
-            throw new IllegalArgumentException("User or comic does not exist");
-        }
-
-        user.removeComic(comic);
-        comicRepository.delete(comic);
-
-        // save repository
-        userRepository.save(user);
-
-        return user.getUserComics().stream().toList();
     }
 
     public User login(String username, String password) {
-        User user = userRepository.findByUsername(username);
+        User user = userDAO.login(username, password);
 
         if (user == null) {
-            // user does not exist
-            return null;
-        }
-
-        if (!user.getPassword().equals(password)) {
-            // incorrect password
-            return null;
+            throw new UserNotFoundException(username);
         }
 
         return user;
     }
 
-    public User getUserById(Long id) {
-        return userRepository.findById(id).orElse(null);
+    public Long register(String username, String password) throws Exception {
+        try {
+            return userDAO.register(username, password);
+        } catch (ConflictException e) {
+            throw new ConflictException("Username already exists");
+        } catch (Exception e) {
+            throw e;
+        }
     }
 
     public Collection getPersonalCollection(Long userId) {
-        User user = userRepository.findById(userId).orElse(null);
+        User user = userDAO.getById(userId);
 
         if (user == null) {
-            throw new IllegalArgumentException("User does not exist");
+            throw new UserNotFoundException(userId);
         }
 
-        Set<ComicBook> comics = user.getUserComics();
+        Set<UserComic> userComics = new HashSet<UserComic>(userComicDAO.getAll(userId));
 
-        Set<IComic> decoratedComics = new HashSet<>();
+        if (userComics.isEmpty()) {
+            return new Collection();
+        }
 
-        for (IComic comic : comics) {
-            IComic decoratedComic = comic; // Start with the original comic
+        for (CollectionElement comic : userComics) {
+            CollectionElement decoratedComic = comic; // Start with the original comic
 
-            if (comic.getSlabbed()) {
+            if (comic.isSlabbed()) {
                 decoratedComic = new ComicSlabbedDecorator(decoratedComic);
             }
 
             if (comic.getGrade() > 0) {
                 decoratedComic = new ComicGradedDecorator(decoratedComic);
             }
-
-            decoratedComics.add(decoratedComic);
         }
 
         Collection collection = new Collection();
 
-        for (IComic comic : comics) {
+        for (CollectionElement comic : userComics) {
             // Find or create the Publisher level
             Collection publisherLevel = findOrCreatePublisherLevel(collection, comic.getPublisher());
 
@@ -214,4 +149,5 @@ public class UserService {
         collection.addElement(newIssue);
         return newIssue;
     }
+
 }

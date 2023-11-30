@@ -44,7 +44,6 @@ export default function CreatePage() {
   const createComicMutation = useMutation({
     mutationKey: ["createComic"],
     mutationFn: async (input: FormData) => {
-      console.log("input", input);
       const data = await fetch("api/user/createComic", {
         method: "POST",
         headers: {
@@ -53,8 +52,6 @@ export default function CreatePage() {
         body: JSON.stringify(input),
         cache: "no-store",
       });
-
-      console.log(data.ok, data.status, data.statusText, data.body);
 
       if (!data.ok) {
         switch (data.status) {
@@ -72,7 +69,6 @@ export default function CreatePage() {
   });
 
   function onSubmit(data: FormData) {
-    console.log(data);
     setLoading(true);
 
     createComicMutation.mutate(

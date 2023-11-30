@@ -8,13 +8,12 @@ import { MobileNav } from "@/components/mobile-nav";
 import { buttonVariants } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
-import { type userSchema } from "@/lib/validations/user";
+import { type RouterOutputs } from "@/trpc/shared";
 import { type MainNavItem } from "@/types";
 import { useState } from "react";
-import { type z } from "zod";
 import { UserAccountNav } from "./user-account-nav";
 
-type userType = z.infer<typeof userSchema>;
+type userType = RouterOutputs["user"]["getById"];
 
 interface MainNavProps {
   items?: MainNavItem[];

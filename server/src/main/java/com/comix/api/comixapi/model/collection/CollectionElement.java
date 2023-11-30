@@ -1,23 +1,45 @@
 package com.comix.api.comixapi.model.collection;
 
+import java.sql.Timestamp;
 import java.util.Set;
 
+import com.comix.api.comixapi.model.creator.ComicCreator;
+import com.comix.api.comixapi.model.character.ComicCharacter;
+
 public interface CollectionElement {
-    public double getValue();
+    Long getId();
 
-    public int getNumberOfIssues();
+    String getPublisher();
 
-    public String getPublisher();
+    String getSeriesTitle();
 
-    public String getSeriesTitle();
+    String getVolumeNumber();
 
-    public String getVolumeNumber();
+    String getIssueNumber();
 
-    public String getIssueNumber();
+    Timestamp getPublicationDate();
 
-    public void addElement(CollectionElement element);
+    String getStoryTitle();
 
-    public void removeElement(CollectionElement element);
+    String getDescription();
 
-    public Set<CollectionElement> getElements();
+    Set<ComicCreator> getCreators();
+
+    Set<ComicCharacter> getPrincipleCharacters();
+
+    double getValue();
+
+    int getGrade();
+
+    boolean isSlabbed();
+
+    Long getUserId();
+
+    int getNumberOfIssues();
+
+    void addElement(CollectionElement element);
+
+    void removeElement(CollectionElement element);
+
+    Set<CollectionElement> getElements();
 }

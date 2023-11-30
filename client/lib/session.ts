@@ -1,29 +1,23 @@
 "use server";
+import { db } from "@/server/db";
+import { users } from "@/server/db/schema";
+import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
-import { userSchema } from "./validations/user";
 
 export async function getCurrentUser() {
-  const userId = cookies().get("userId");
+  const userId = cookies().get("user-id");
 
-  if (!userId) {
+  if (!userId?.value) {
     return null;
   }
 
-  const userResult = await fetch(
-    `http://localhost:8080/users/${userId.value}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    },
-  );
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, parseInt(userId.value)),
+  });
 
-  if (!userResult.ok) {
+  if (!user) {
     return null;
   }
-
-  const user = userSchema.parse(await userResult.json());
 
   return user;
 }
@@ -31,7 +25,7 @@ export async function getCurrentUser() {
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function signOut() {
   // clear cookies
-  cookies().set("userId", "", {
+  cookies().set("user-id", "", {
     maxAge: -1,
   });
 }
