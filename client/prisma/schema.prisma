@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model User {
+  id        Int         @id @default(autoincrement())
+  username  String      @unique
+  password  String
+  role      Role        @default(USER)
+  UserComic UserComic[]
+
+  @@map("users")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Comic {
+  id                  Int              @id @default(autoincrement())
+  publisher           String           @db.VarChar(40)
+  seriesTitle         String           @db.VarChar(255)
+  volumeNumber        String           @db.VarChar(10)
+  issueNumber         String           @db.VarChar(10)
+  publicationDate     DateTime
+  creators            ComicCreator[]
+  principalCharacters ComicCharacter[]
+  storyTitle          String?
+  description         String?
+
+  @@unique([publisher, seriesTitle, volumeNumber, issueNumber, publicationDate])
+  @@map("comics")
+}
+
+model UserComic {
+  id                  Int                  @id @default(autoincrement())
+  publisher           String               @db.VarChar(40)
+  seriesTitle         String               @db.VarChar(255)
+  volumeNumber        String               @db.VarChar(10)
+  issueNumber         String               @db.VarChar(10)
+  publicationDate     DateTime
+  creators            UserComicCreator[]
+  principalCharacters UserComicCharacter[]
+  storyTitle          String?
+  description         String?
+
+  value   Float   @default(0)
+  grade   Int     @default(0)
+  slabbed Boolean @default(false)
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  @@unique([publisher, seriesTitle, volumeNumber, issueNumber, publicationDate, userId])
+  @@index([userId])
+  @@map("user_comics")
+}
+
+model Creator {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  comics     ComicCreator[]
+  userComics UserComicCreator[]
+
+  @@map("creators")
+}
+
+model ComicCreator {
+  creator   Creator @relation(fields: [creatorId], references: [id])
+  creatorId Int
+
+  comic   Comic @relation(fields: [comicId], references: [id])
+  comicId Int
+
+  @@id([comicId, creatorId])
+  @@index([comicId])
+  @@index([creatorId])
+  @@map("comic_creators")
+}
+
+model UserComicCreator {
+  creator   Creator @relation(fields: [creatorId], references: [id])
+  creatorId Int
+
+  userComic   UserComic @relation(fields: [userComicId], references: [id])
+  userComicId Int
+
+  @@id([userComicId, creatorId])
+  @@index([userComicId])
+  @@index([creatorId])
+  @@map("usercomic_creators")
+}
+
+model PrincipalCharacter {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  comics     ComicCharacter[]
+  userComics UserComicCharacter[]
+
+  @@map("principal_characters")
+}
+
+model ComicCharacter {
+  character   PrincipalCharacter @relation(fields: [characterId], references: [id])
+  characterId Int
+
+  comic   Comic @relation(fields: [comicId], references: [id])
+  comicId Int
+
+  @@id([comicId, characterId])
+  @@index([comicId])
+  @@index([characterId])
+  @@map("comic_characters")
+}
+
+model UserComicCharacter {
+  character   PrincipalCharacter @relation(fields: [characterId], references: [id])
+  characterId Int
+
+  userComic   UserComic @relation(fields: [userComicId], references: [id])
+  userComicId Int
+
+  @@id([userComicId, characterId])
+  @@index([userComicId])
+  @@index([characterId])
+  @@map("usercomic_characters")
+}
